@@ -16,13 +16,22 @@ export default function PingPage() {
 
         try {
             const res = await fetch(`/api/ping?host=${encodeURIComponent(host)}`);
-            const data = await res.json();
 
             if (!res.ok) {
+                const data = await res.json();
                 throw new Error(data.error || 'Ping failed');
             }
 
-            setOutput(data.output);
+            const reader = res.body?.getReader();
+            if (!reader) throw new Error('Failed to read stream');
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const text = new TextDecoder().decode(value);
+                setOutput(prev => prev + text);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {

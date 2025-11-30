@@ -16,13 +16,22 @@ export default function TraceroutePage() {
 
         try {
             const res = await fetch(`/api/traceroute?host=${encodeURIComponent(host)}`);
-            const data = await res.json();
 
             if (!res.ok) {
+                const data = await res.json();
                 throw new Error(data.error || 'Traceroute failed');
             }
 
-            setOutput(data.output);
+            const reader = res.body?.getReader();
+            if (!reader) throw new Error('Failed to read stream');
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const text = new TextDecoder().decode(value);
+                setOutput(prev => prev + text);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
