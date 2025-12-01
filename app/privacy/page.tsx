@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Privacy Policy - y4yes',
+    description: 'Read the y4yes Privacy Policy. We do not log your queries or track your usage. Your privacy is our priority.',
+    keywords: ['privacy policy', 'data protection', 'no logging', 'privacy-first'],
+};
 
 export default function PrivacyPage() {
     return (

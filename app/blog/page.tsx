@@ -1,5 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Blog - Network Insights & Tutorials',
+    description: 'Read articles, tutorials, and guides about networking, DNS, security, SSL/TLS, and web development from the y4yes team.',
+    keywords: ['blog', 'network tutorials', 'dns guides', 'security articles', 'networking'],
+};
 
 // Dummy blog data - in a real app this would come from a CMS or MDX files
 const posts = [

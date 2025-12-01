@@ -15,20 +15,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "y4yes - Network Tools Suite",
-  description: "Simple, fast, and secure network tools: IP Checker, Speed Test, DNS Lookup, WHOIS, Port Scanner, and more.",
-  keywords: ["network tools", "ip checker", "speed test", "dns lookup", "whois", "port scanner", "ssl checker", "traceroute", "url encoder"],
+  metadataBase: new URL('https://y4yes.com'),
+  title: {
+    default: "y4yes - Network Tools Suite",
+    template: "%s | y4yes"
+  },
+  description: "Simple, fast, and secure network tools: IP Checker, Speed Test, DNS Lookup, WHOIS, Port Scanner, and more. No logs, no tracking.",
+  keywords: ["network tools", "ip checker", "speed test", "dns lookup", "whois", "port scanner", "ssl checker", "traceroute", "url encoder", "developer tools"],
+  authors: [{ name: "y4yes Team" }],
   openGraph: {
     title: "y4yes - Network Tools Suite",
-    description: "Simple, fast, and secure network tools for developers and admins.",
-    type: "website",
-    locale: "en_US",
-    siteName: "y4yes",
+    description: "Simple, fast, and secure network tools for developers and system administrators.",
+    url: 'https://y4yes.com',
+    siteName: 'y4yes',
+    locale: 'en_US',
+    type: 'website',
   },
   twitter: {
     card: "summary_large_image",
     title: "y4yes - Network Tools Suite",
-    description: "Simple, fast, and secure network tools.",
+    description: "Simple, fast, and secure network tools for developers.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

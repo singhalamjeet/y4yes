@@ -1,4 +1,11 @@
 import { headers } from 'next/headers';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "What's My IP Address? - Check Public IP & Location",
+    description: 'Instantly check your public IP address, ISP, and location details. Fast, secure, and no-logs IP checker tool.',
+    keywords: ['my ip', 'what is my ip', 'ip address check', 'ip location', 'isp check', 'public ip'],
+};
 
 interface GeoData {
     country?: string;

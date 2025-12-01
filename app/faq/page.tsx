@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'FAQ - Frequently Asked Questions',
+    description: 'Find answers to common questions about y4yes network tools, privacy, API access, and more.',
+    keywords: ['faq', 'help', 'questions', 'support'],
+};
 
 export default function FAQPage() {
     const faqs = [

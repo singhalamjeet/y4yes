@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'About y4yes - Network Tools Suite',
+    description: 'Learn about y4yes, a comprehensive suite of free network tools for developers and system administrators. Privacy-first, all-in-one platform.',
+    keywords: ['about y4yes', 'network tools', 'developer tools', 'privacy-first tools'],
+};
 
 export default function AboutPage() {
     return (

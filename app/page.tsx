@@ -1,5 +1,11 @@
 import { ToolCard } from "@/components/ToolCard";
 import { NetworkDashboard } from "@/components/NetworkDashboard";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Network Tools Suite - DNS, Ping, SSL & More",
+  description: "Free online network tools for developers. Check your IP, test internet speed, lookup DNS records, scan ports, and more.",
+};
 
 const tools = [
   {

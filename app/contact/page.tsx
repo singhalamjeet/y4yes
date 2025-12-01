@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Contact Us - y4yes Support',
+    description: 'Get in touch with the y4yes team. Contact us for support, questions, or feedback about our network tools.',
+    keywords: ['contact y4yes', 'support', 'help', 'feedback'],
+};
 
 export default function ContactPage() {
     return (

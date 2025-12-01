@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Terms of Service - y4yes',
+    description: 'Read the y4yes Terms of Service. Learn about usage guidelines and legal terms for using our network tools.',
+    keywords: ['terms of service', 'usage terms', 'legal'],
+};
 
 export default function TermsPage() {
     return (
