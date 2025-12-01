@@ -1,6 +1,47 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+
+// Post metadata for SEO
+const postMetadata: Record<string, { title: string; description: string; keywords: string[] }> = {
+    'understanding-dns-records': {
+        title: 'Understanding DNS Records: A Beginner\'s Guide',
+        description: 'Learn the difference between A, AAAA, CNAME, MX, and TXT records and how they control your domain. Complete DNS guide for beginners.',
+        keywords: ['dns records', 'dns guide', 'a record', 'cname', 'mx record', 'txt record', 'dns explained']
+    },
+    'ipv4-vs-ipv6': {
+        title: 'IPv4 vs IPv6: What\'s the Difference?',
+        description: 'An in-depth comparison of IPv4 and IPv6. Learn why the transition to IPv6 matters and understand the key differences between these protocols.',
+        keywords: ['ipv4 vs ipv6', 'internet protocol', 'ipv6 transition', 'ip addresses', 'networking']
+    },
+    'how-ssl-works': {
+        title: 'How SSL/TLS Certificates Protect Your Data',
+        description: 'Demystifying the SSL/TLS handshake process and encryption that keeps your web browsing secure. Learn how HTTPS protects your data.',
+        keywords: ['ssl certificate', 'tls', 'https', 'ssl handshake', 'web security', 'encryption']
+    }
+};
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const meta = postMetadata[params.slug];
+
+    if (!meta) {
+        return {
+            title: 'Post Not Found',
+        };
+    }
+
+    return {
+        title: meta.title,
+        description: meta.description,
+        keywords: meta.keywords,
+        openGraph: {
+            title: meta.title,
+            description: meta.description,
+            type: 'article',
+        },
+    };
+}
 
 // Dummy data store - matching the listing page
 const posts: Record<string, { title: string; date: string; category: string; content: React.ReactNode }> = {
@@ -23,6 +64,8 @@ const posts: Record<string, { title: string; date: string; category: string; con
 
                 <h3>Why DNS Matters</h3>
                 <p>Without DNS, we would have to remember IP addresses for every website we want to visit. DNS makes the internet accessible and user-friendly.</p>
+
+                <p>Want to check DNS records for any domain? Try our <Link href="/dns" className="text-blue-400 hover:text-blue-300 underline">DNS Lookup Tool</Link> to view A, AAAA, MX, TXT, NS, CNAME, and SOA records instantly.</p>
             </>
         )
     },
@@ -46,6 +89,8 @@ const posts: Record<string, { title: string; date: string; category: string; con
                     <li><strong>Header Complexity:</strong> IPv6 has a simpler header format, designed to minimize packet processing.</li>
                     <li><strong>Security:</strong> IPSec was built into the IPv6 specification, whereas it is an add-on for IPv4.</li>
                 </ul>
+
+                <p>Check your public IP address and see if you're using IPv4 or IPv6 with our <Link href="/ip" className="text-blue-400 hover:text-blue-300 underline">IP Checker Tool</Link>.</p>
             </>
         )
     },
@@ -68,6 +113,8 @@ const posts: Record<string, { title: string; date: string; category: string; con
 
                 <h3>Why You Need SSL</h3>
                 <p>SSL protects sensitive data like passwords and credit card numbers from being intercepted by attackers. It also builds trust with your users and improves your SEO rankings.</p>
+
+                <p>Verify your website's SSL certificate installation and validity with our <Link href="/ssl-check" className="text-blue-400 hover:text-blue-300 underline">SSL Checker Tool</Link>.</p>
             </>
         )
     }
