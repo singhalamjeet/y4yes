@@ -167,10 +167,10 @@ export default function SuperToolPage() {
                         <table className="w-full">
                             <thead className="bg-zinc-100 dark:bg-zinc-800/50">
                                 <tr>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm">Blacklist</th>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm">Reason</th>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm">TTL</th>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm">Response Time</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Blacklist</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Reason</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">TTL</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Response Time</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -225,10 +225,10 @@ export default function SuperToolPage() {
                         <table className="w-full">
                             <thead className="bg-zinc-100 dark:bg-zinc-800/50">
                                 <tr>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm w-16">Status</th>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm w-32">Category</th>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm w-48">Test</th>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm">Message</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm w-16 text-zinc-900 dark:text-white">Status</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm w-32 text-zinc-900 dark:text-white">Category</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm w-48 text-zinc-900 dark:text-white">Test</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Message</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -292,10 +292,10 @@ export default function SuperToolPage() {
                             <table className="w-full">
                                 <thead className="bg-zinc-100 dark:bg-zinc-800/50">
                                     <tr>
-                                        <th className="text-left py-3 px-4 font-semibold text-sm">Type</th>
-                                        {selectedTool === 'mx' && <th className="text-left py-3 px-4 font-semibold text-sm">Pref</th>}
-                                        <th className="text-left py-3 px-4 font-semibold text-sm">{selectedTool === 'mx' ? 'Hostname' : 'Value'}</th>
-                                        {filteredRecords.some((r: any) => r.ttl) && <th className="text-left py-3 px-4 font-semibold text-sm">TTL</th>}
+                                        <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Type</th>
+                                        {selectedTool === 'mx' && <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Pref</th>}
+                                        <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">{selectedTool === 'mx' ? 'Hostname' : 'Value'}</th>
+                                        {filteredRecords.some((r: any) => r.ttl) && <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">TTL</th>}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -399,8 +399,8 @@ export default function SuperToolPage() {
                         <table className="w-full">
                             <thead className="bg-zinc-100 dark:bg-zinc-800/50">
                                 <tr>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm">Port</th>
-                                    <th className="text-left py-3 px-4 font-semibold text-sm">Status</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Port</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-sm text-zinc-900 dark:text-white">Status</th>
                                 </tr>
                             </thead>
                             <tbody>

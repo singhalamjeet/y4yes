@@ -23,9 +23,21 @@ export async function GET(request: Request) {
             const command = 'ping';
 
             const child = spawn(command, args);
+            let buffer = '';
 
             child.stdout.on('data', (data) => {
-                controller.enqueue(encoder.encode(data.toString()));
+                buffer += data.toString();
+                const lines = buffer.split('\n');
+
+                // Keep last incomplete line in buffer
+                buffer = lines.pop() || '';
+
+                // Send complete lines immediately
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        controller.enqueue(encoder.encode(line + '\n'));
+                    }
+                });
             });
 
             child.stderr.on('data', (data) => {
@@ -33,6 +45,10 @@ export async function GET(request: Request) {
             });
 
             child.on('close', () => {
+                // Send any remaining buffer
+                if (buffer.trim()) {
+                    controller.enqueue(encoder.encode(buffer));
+                }
                 controller.close();
             });
 
@@ -47,6 +63,7 @@ export async function GET(request: Request) {
         headers: {
             'Content-Type': 'text/plain',
             'Transfer-Encoding': 'chunked',
+            'X-Content-Type-Options': 'nosniff'
         },
     });
 }
