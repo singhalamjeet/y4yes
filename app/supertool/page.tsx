@@ -182,7 +182,7 @@ export default function SuperToolPage() {
                                                 {result.status === 'LISTED' && <span className="text-red-600 font-bold">Status Listed</span>}
                                                 {result.status === 'TIMEOUT' && <span className="text-yellow-600 font-bold">Status Warning TIMEOUT</span>}
                                                 {result.status === 'ERROR' && <span className="text-red-400 font-bold">Status Error</span>}
-                                                <span className="font-medium">{result.blacklist}</span>
+                                                <span className="font-medium text-zinc-900 dark:text-zinc-100">{result.blacklist}</span>
                                             </div>
                                         </td>
                                         <td className="py-3 px-4 text-sm text-zinc-500">{result.reason}</td>
@@ -258,7 +258,7 @@ export default function SuperToolPage() {
                                             )}
                                         </td>
                                         <td className="py-3 px-4 font-medium text-sm text-zinc-600 dark:text-zinc-400">{result.category}</td>
-                                        <td className="py-3 px-4 font-medium text-sm">{result.test}</td>
+                                        <td className="py-3 px-4 font-medium text-sm text-zinc-900 dark:text-zinc-100">{result.test}</td>
                                         <td className="py-3 px-4 text-sm text-zinc-600 dark:text-zinc-400">{result.message}</td>
                                     </tr>
                                 ))}
@@ -325,7 +325,7 @@ export default function SuperToolPage() {
                 <div className="space-y-4">
                     <div className="text-2xl font-bold">whois:{domain}</div>
                     <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-300 dark:border-zinc-800 p-6">
-                        <pre className="text-sm font-mono whitespace-pre-wrap">{results.data}</pre>
+                        <pre className="text-sm font-mono whitespace-pre-wrap text-zinc-900 dark:text-zinc-100">{results.data}</pre>
                     </div>
                 </div>
             );
@@ -343,27 +343,27 @@ export default function SuperToolPage() {
                         <table className="w-full">
                             <tbody>
                                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50 w-48">Status</td>
-                                    <td className="py-3 px-4">
+                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50 w-48 text-zinc-900 dark:text-zinc-100">Status</td>
+                                    <td className="py-3 px-4 text-zinc-900 dark:text-zinc-100">
                                         <span className={`inline-flex items-center gap-2 ${cert.valid ? 'text-green-600' : 'text-red-600'}`}>
                                             {cert.valid ? '✓' : '✗'} {cert.valid ? 'Valid' : 'Invalid'}
                                         </span>
                                     </td>
                                 </tr>
                                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50">Issuer</td>
-                                    <td className="py-3 px-4">{cert.issuer?.O || cert.issuer?.CN || 'Unknown'}</td>
+                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50 text-zinc-900 dark:text-zinc-100">Issuer</td>
+                                    <td className="py-3 px-4 text-zinc-900 dark:text-zinc-100">{cert.issuer?.O || cert.issuer?.CN || 'Unknown'}</td>
                                 </tr>
                                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50">Valid From</td>
-                                    <td className="py-3 px-4">{new Date(cert.validFrom).toLocaleDateString()}</td>
+                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50 text-zinc-900 dark:text-zinc-100">Valid From</td>
+                                    <td className="py-3 px-4 text-zinc-900 dark:text-zinc-100">{new Date(cert.validFrom).toLocaleDateString()}</td>
                                 </tr>
                                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50">Valid To</td>
-                                    <td className="py-3 px-4">{new Date(cert.validTo).toLocaleDateString()}</td>
+                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50 text-zinc-900 dark:text-zinc-100">Valid To</td>
+                                    <td className="py-3 px-4 text-zinc-900 dark:text-zinc-100">{new Date(cert.validTo).toLocaleDateString()}</td>
                                 </tr>
                                 <tr>
-                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50">Days Remaining</td>
+                                    <td className="py-3 px-4 font-semibold bg-zinc-100 dark:bg-zinc-800/50 text-zinc-900 dark:text-zinc-100">Days Remaining</td>
                                     <td className="py-3 px-4">
                                         <span className={cert.daysRemaining > 30 ? 'text-green-600' : cert.daysRemaining > 0 ? 'text-yellow-600' : 'text-red-600'}>
                                             {cert.daysRemaining} days
@@ -383,7 +383,7 @@ export default function SuperToolPage() {
                 <div className="space-y-4">
                     <div className="text-2xl font-bold">ping:{domain}</div>
                     <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-300 dark:border-zinc-800 p-6">
-                        <pre className="text-sm font-mono whitespace-pre-wrap">{results.output}</pre>
+                        <pre className="text-sm font-mono whitespace-pre-wrap text-zinc-900 dark:text-zinc-100">{results.output}</pre>
                     </div>
                 </div>
             );
@@ -406,7 +406,7 @@ export default function SuperToolPage() {
                             <tbody>
                                 {portResults.map((result: any, idx: number) => (
                                     <tr key={idx} className="border-t border-zinc-200 dark:border-zinc-800">
-                                        <td className="py-3 px-4">{result.port}</td>
+                                        <td className="py-3 px-4 text-zinc-900 dark:text-zinc-100">{result.port}</td>
                                         <td className="py-3 px-4">
                                             <span className={result.status === 'open' ? 'text-green-600' : 'text-zinc-500'}>
                                                 {result.status}
@@ -427,7 +427,7 @@ export default function SuperToolPage() {
                 <div className="space-y-4">
                     <div className="text-2xl font-bold">trace:{domain}</div>
                     <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-300 dark:border-zinc-800 p-6">
-                        <pre className="text-sm font-mono whitespace-pre-wrap">{results.output}</pre>
+                        <pre className="text-sm font-mono whitespace-pre-wrap text-zinc-900 dark:text-zinc-100">{results.output}</pre>
                     </div>
                 </div>
             );
