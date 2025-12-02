@@ -301,8 +301,8 @@ export default function SuperToolPage() {
                                 <tbody>
                                     {filteredRecords.map((record: any, idx: number) => (
                                         <tr key={idx} className="border-t border-zinc-200 dark:border-zinc-800">
-                                            <td className="py-3 px-4 font-medium">{record.type}</td>
-                                            {selectedTool === 'mx' && <td className="py-3 px-4">{record.priority || '-'}</td>}
+                                            <td className="py-3 px-4 font-medium text-zinc-900 dark:text-zinc-100">{record.type}</td>
+                                            {selectedTool === 'mx' && <td className="py-3 px-4 text-zinc-900 dark:text-zinc-100">{record.priority || '-'}</td>}
                                             <td className="py-3 px-4 text-blue-600 dark:text-blue-400 break-all">{record.value}</td>
                                             {filteredRecords.some((r: any) => r.ttl) && <td className="py-3 px-4 text-zinc-500">{record.ttl || '-'}</td>}
                                         </tr>
