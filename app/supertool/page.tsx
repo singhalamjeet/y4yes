@@ -494,7 +494,7 @@ export default function SuperToolPage() {
                                         }}
                                         className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedTool === tool.id
                                             ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                                            : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                            : 'text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                                             }`}
                                     >
                                         {tool.name}
