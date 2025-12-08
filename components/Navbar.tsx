@@ -7,9 +7,18 @@ export function Navbar() {
         <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           y4yes
         </Link>
-        <div className="flex gap-6 text-sm font-medium text-zinc-400">
+        <div className="flex gap-6 items-center text-sm font-medium text-zinc-400">
           <Link href="/" className="hover:text-white transition-colors">Home</Link>
           <Link href="/about" className="hover:text-white transition-colors">About</Link>
+          <a
+            href="https://buymeacoffee.com/y4yes"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg transition-all hover:scale-105"
+          >
+            <span>☕</span>
+            <span>Buy Me a Coffee</span>
+          </a>
         </div>
       </div>
     </nav>
