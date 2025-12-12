@@ -3,7 +3,7 @@ import { NetworkDashboard } from "@/components/NetworkDashboard";
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "y4yes - Free Network Tools Suite (DNS Lookup, Speed Test, Port Scan)",
+  title: "y4yes - Free Network Tools: DNS Lookup, Port Scanner, Speed Test & SSL Check",
   description: "Diagnose network issues instantly with y4yes. Free online tools for Developers and Admins: Check Public IP, DNS Propagation, SSL Status, Ping Test, and Port Scanning.",
 };
 
@@ -102,6 +102,16 @@ export default function Home() {
             </p>
           </div>
         </div>
+      </section>
+
+      <section className="max-w-4xl mx-auto mt-12 mb-8 text-center space-y-6">
+        <h3 className="text-2xl font-bold text-white mb-6">Why use y4yes?</h3>
+        <p className="text-lg leading-relaxed text-zinc-300">
+          Developers and System Administrators rely on y4yes to <strong className="text-white">troubleshoot DNS propagation</strong> issues globally, <strong className="text-white">scan for open ports</strong> on firewalls, and <strong className="text-white">verify SSL certificate expiration</strong> without installing external software.
+        </p>
+        <p className="text-lg leading-relaxed text-zinc-300">
+          Whether you need to <strong className="text-white">trace an IP address</strong> location, check if a website is down, or run a reliable <strong className="text-white">ping test</strong> for latency, our suite provides secure, client-side diagnostics instantly.
+        </p>
       </section>
     </div>
   );
