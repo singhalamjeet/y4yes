@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -52,6 +53,50 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
+        <Script
+          id="schema-org"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "SoftwareApplication",
+                  "name": "y4yes Network Tools Suite",
+                  "applicationCategory": "DeveloperApplication",
+                  "operatingSystem": "Web",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                  },
+                  "description": "A free suite of network utilities including DNS Lookup, Speed Test, Ping, and SSL Checker."
+                },
+                {
+                  "@type": "FAQPage",
+                  "mainEntity": [
+                    {
+                      "@type": "Question",
+                      "name": "What is y4yes Network Tools Suite?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "y4yes is a free, secure, and all-in-one network utility suite designed for developers and network administrators. It includes DNS Lookup, Port Scanning, SSL Verification, and more."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "How can I check if my DNS records are propagating?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Use the y4yes DNS Lookup tool to instantly query A, MX, CNAME, and TXT records simultaneously to verify global propagation."
+                      }
+                    }
+                  ]
+                }
+              ]
+            })
+          }}
+        />
         <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8">
           {children}

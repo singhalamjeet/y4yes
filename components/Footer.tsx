@@ -37,6 +37,11 @@ export function Footer() {
                         <p className="text-sm text-zinc-500">
                             Simple, fast, and secure network tools for developers and system administrators.
                         </p>
+                        <p className="text-sm">
+                            <a href="mailto:y4yes@outlook.com" className="text-blue-400 hover:text-blue-300 transition-colors">
+                                y4yes@outlook.com
+                            </a>
+                        </p>
                     </div>
                 </div>
 

@@ -29,8 +29,8 @@ export default function ContactPage() {
                     <p className="text-zinc-400">
                         For general inquiries and support, please email us at:
                     </p>
-                    <a href="mailto:support@y4yes.com" className="text-blue-400 hover:text-blue-300 font-medium text-lg block mt-2">
-                        support@y4yes.com
+                    <a href="mailto:y4yes@outlook.com" className="text-blue-400 hover:text-blue-300 font-medium text-lg block mt-2">
+                        y4yes@outlook.com
                     </a>
                 </div>
 

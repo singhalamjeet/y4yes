@@ -3,8 +3,8 @@ import { NetworkDashboard } from "@/components/NetworkDashboard";
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Network Tools Suite - DNS, Ping, SSL & More",
-  description: "Free online network tools for developers. Check your IP, test internet speed, lookup DNS records, scan ports, and more.",
+  title: "y4yes - Free Network Tools Suite (DNS Lookup, Speed Test, Port Scan)",
+  description: "Diagnose network issues instantly with y4yes. Free online tools for Developers and Admins: Check Public IP, DNS Propagation, SSL Status, Ping Test, and Port Scanning.",
 };
 
 const tools = [
@@ -74,6 +74,35 @@ export default function Home() {
           <ToolCard key={tool.href} {...tool} />
         ))}
       </div>
+
+      <section id="faq-section" className="max-w-4xl mx-auto mt-16 mb-8 space-y-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-center text-white mb-8">
+          Frequently Asked Questions about Network Utilities
+        </h2>
+
+        <div className="space-y-6">
+          <div className="faq-item space-y-2">
+            <h3 className="text-xl font-semibold text-white">What is y4yes Network Tools Suite?</h3>
+            <p className="text-zinc-400 leading-relaxed">
+              y4yes is a free, secure, and all-in-one network utility suite designed for developers and network administrators. It combines essential tools like <strong className="text-white">DNS Lookup</strong>, <strong className="text-white">Port Scanning</strong>, <strong className="text-white">SSL Verification</strong>, and <strong className="text-white">Whois Lookup</strong> into a single interface, allowing you to diagnose connectivity issues directly from your browser without installing external software.
+            </p>
+          </div>
+
+          <div className="faq-item space-y-2">
+            <h3 className="text-xl font-semibold text-white">How can I check if my DNS records are propagating correctly?</h3>
+            <p className="text-zinc-400 leading-relaxed">
+              You can use the <strong className="text-white">y4yes DNS Lookup tool</strong> to instantly query A, MX, CNAME, and TXT records. Unlike standard command-line tools, y4yes checks multiple record types simultaneously to verify if your domain changes have propagated across the global internet.
+            </p>
+          </div>
+
+          <div className="faq-item space-y-2">
+            <h3 className="text-xl font-semibold text-white">Is checking my IP address or scanning ports on y4yes safe?</h3>
+            <p className="text-zinc-400 leading-relaxed">
+              Yes. y4yes operates as a client-side optimized tool suite. Whether you are performing a <strong className="text-white">Ping Test</strong>, <strong className="text-white">Traceroute</strong>, or <strong className="text-white">Port Scan</strong>, we prioritize user privacy and do not log your sensitive query data. It is the safest way to verify your public IP and test firewall security from an external source.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
