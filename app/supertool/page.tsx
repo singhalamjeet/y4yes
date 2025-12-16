@@ -440,7 +440,10 @@ export default function SuperToolPage() {
         <div className="max-w-7xl mx-auto space-y-8">
             <div className="space-y-4">
                 <h1 className="text-4xl font-bold">SuperTool</h1>
-                <p className="text-zinc-400">All of your network tools in one place</p>
+                <p className="text-zinc-400">All of your network tools in one place. Enter a domain once and run multiple diagnostic tools instantly.</p>
+                <p className="text-zinc-300 text-sm max-w-3xl">
+                    <strong className="text-white">SuperTool</strong> consolidates 20+ network utilities into a single powerful interface. Switch between DNS lookups, SSL checks, blacklist monitoring, domain health analysis, and more without re-entering your domain. Perfect for system administrators and developers who need comprehensive network diagnostics in one place.
+                </p>
             </div>
 
             {/* Network Dashboard */}
