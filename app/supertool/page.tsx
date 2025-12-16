@@ -447,74 +447,6 @@ export default function SuperToolPage() {
                 </p>
             </div>
 
-            {/* Comprehensive Tools List - SEO Optimized */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* DNS & Domain Tools */}
-                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="text-2xl">🌐</span> DNS & Domain Tools
-                    </h3>
-                    <ul className="space-y-2 text-sm text-zinc-300">
-                        <li><strong className="text-white">DNS Lookup:</strong> Query A, AAAA, MX, TXT, NS, CNAME, SOA, and SRV records</li>
-                        <li><strong className="text-white">WHOIS Lookup:</strong> Domain registration and ownership information</li>
-                        <li><strong className="text-white">Domain Health:</strong> Comprehensive domain configuration analysis</li>
-                        <li><strong className="text-white">Reverse DNS:</strong> IP to hostname resolution</li>
-                    </ul>
-                </div>
-
-                {/* Email Security Tools */}
-                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="text-2xl">📧</span> Email Security Tools
-                    </h3>
-                    <ul className="space-y-2 text-sm text-zinc-300">
-                        <li><strong className="text-white">MX Lookup:</strong> Mail server records and email routing</li>
-                        <li><strong className="text-white">SPF Record Check:</strong> Sender Policy Framework validation</li>
-                        <li><strong className="text-white">DKIM Lookup:</strong> DomainKeys Identified Mail authentication</li>
-                        <li><strong className="text-white">DMARC Lookup:</strong> Email authentication policy verification</li>
-                        <li><strong className="text-white">Blacklist Check:</strong> Email blacklist monitoring across 45+ RBLs</li>
-                    </ul>
-                </div>
-
-                {/* Security & SSL Tools */}
-                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="text-2xl">🔒</span> Security & SSL Tools
-                    </h3>
-                    <ul className="space-y-2 text-sm text-zinc-300">
-                        <li><strong className="text-white">SSL Certificate Check:</strong> HTTPS certificate validation and expiration</li>
-                        <li><strong className="text-white">HTTPS Lookup:</strong> Secure connection verification</li>
-                        <li><strong className="text-white">Port Scanner:</strong> Open port detection for security audits</li>
-                        <li><strong className="text-white">HTTP Lookup:</strong> Web server configuration check</li>
-                    </ul>
-                </div>
-
-                {/* Network Diagnostic Tools */}
-                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <span className="text-2xl">🔍</span> Network Diagnostic Tools
-                    </h3>
-                    <ul className="space-y-2 text-sm text-zinc-300">
-                        <li><strong className="text-white">Ping Test:</strong> Server availability and latency monitoring</li>
-                        <li><strong className="text-white">Traceroute:</strong> Network path visualization and hop analysis</li>
-                        <li><strong className="text-white">TXT Record Lookup:</strong> Text record verification for domain validation</li>
-                    </ul>
-                </div>
-            </div>
-
-            {/* Popular Tools Quick Access */}
-            <div className="p-6 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                    <span className="text-2xl">⭐</span> Most Popular Tools
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                    {tools.filter(t => t.popular).map(tool => (
-                        <span key={tool.id} className="px-4 py-2 rounded-lg bg-orange-500/20 text-orange-300 text-sm font-medium border border-orange-500/30">
-                            {tool.name}
-                        </span>
-                    ))}
-                </div>
-            </div>
 
             {/* Network Dashboard */}
             <NetworkDashboard />
@@ -592,6 +524,61 @@ export default function SuperToolPage() {
                             {tool.name}
                         </button>
                     ))}
+                </div>
+            </div>
+
+            {/* Comprehensive Tools List - SEO Optimized */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* DNS & Domain Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">🌐</span> DNS & Domain Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">DNS Lookup:</strong> Query A, AAAA, MX, TXT, NS, CNAME, SOA, and SRV records</li>
+                        <li><strong className="text-white">WHOIS Lookup:</strong> Domain registration and ownership information</li>
+                        <li><strong className="text-white">Domain Health:</strong> Comprehensive domain configuration analysis</li>
+                        <li><strong className="text-white">Reverse DNS:</strong> IP to hostname resolution</li>
+                    </ul>
+                </div>
+
+                {/* Email Security Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">📧</span> Email Security Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">MX Lookup:</strong> Mail server records and email routing</li>
+                        <li><strong className="text-white">SPF Record Check:</strong> Sender Policy Framework validation</li>
+                        <li><strong className="text-white">DKIM Lookup:</strong> DomainKeys Identified Mail authentication</li>
+                        <li><strong className="text-white">DMARC Lookup:</strong> Email authentication policy verification</li>
+                        <li><strong className="text-white">Blacklist Check:</strong> Email blacklist monitoring across 45+ RBLs</li>
+                    </ul>
+                </div>
+
+                {/* Security & SSL Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">🔒</span> Security & SSL Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">SSL Certificate Check:</strong> HTTPS certificate validation and expiration</li>
+                        <li><strong className="text-white">HTTPS Lookup:</strong> Secure connection verification</li>
+                        <li><strong className="text-white">Port Scanner:</strong> Open port detection for security audits</li>
+                        <li><strong className="text-white">HTTP Lookup:</strong> Web server configuration check</li>
+                    </ul>
+                </div>
+
+                {/* Network Diagnostic Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">🔍</span> Network Diagnostic Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">Ping Test:</strong> Server availability and latency monitoring</li>
+                        <li><strong className="text-white">Traceroute:</strong> Network path visualization and hop analysis</li>
+                        <li><strong className="text-white">TXT Record Lookup:</strong> Text record verification for domain validation</li>
+                    </ul>
                 </div>
             </div>
 
