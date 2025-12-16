@@ -224,6 +224,74 @@ export default function SslClient() {
                     </div>
                 </div>
             )}
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is SSL Certificate Checker?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        SSL Certificate Checker is a security validation tool that verifies the SSL/TLS certificate installation on a website. It checks certificate validity, expiration dates, issuer information, and encryption strength. This helps ensure your website's HTTPS connection is secure and trusted by browsers, preventing security warnings for your visitors.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Certificate Monitoring:</strong> Check SSL expiration date to avoid unexpected cert expiry</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">HTTPS Verification:</strong> Confirm SSL is properly installed after deploying a new certificate</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Security Audit:</strong> Verify certificate authority, encryption strength, and protocol version</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Troubleshooting:</strong> Diagnose browser security warnings or certificate errors</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
+                    <ol className="space-y-2 text-zinc-300">
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">1.</span>
+                            <span>Enter a domain name (e.g., <code className="px-2 py-1 bg-zinc-800 rounded text-blue-400">google.com</code>)</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">2.</span>
+                            <span>Click <strong className="text-white">"Check SSL"</strong> to verify the certificate</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">3.</span>
+                            <span>Review certificate status, expiration date, and issuer details</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">What We Check</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <span className="text-white font-medium">✓</span> <span className="text-zinc-400">Certificate validity</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <span className="text-white font-medium">✓</span> <span className="text-zinc-400">Expiration date</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <span className="text-white font-medium">✓</span> <span className="text-zinc-400">Issuer authority</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <span className="text-white font-medium">✓</span> <span className="text-zinc-400">Encryption strength</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
