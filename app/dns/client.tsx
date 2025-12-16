@@ -169,6 +169,76 @@ export default function DnsClient() {
                     </div>
                 </div>
             )}
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is DNS Lookup?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        DNS Lookup is a network diagnostic tool that queries Domain Name System (DNS) servers to retrieve all DNS records associated with a domain name. It helps you verify DNS configuration, troubleshoot DNS propagation issues, and inspect email routing (MX records), domain ownership verification (TXT records), and more.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Verify DNS Changes:</strong> Check if your recent DNS updates have propagated globally</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Email Configuration:</strong> View MX records to troubleshoot email delivery issues</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Domain Verification:</strong> Check TXT records for domain ownership validation (SPF, DKIM, DMARC)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Find Nameservers:</strong> Identify which DNS servers are authoritative for a domain</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
+                    <ol className="space-y-2 text-zinc-300">
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">1.</span>
+                            <span>Enter a domain name (e.g., <code className="px-2 py-1 bg-zinc-800 rounded text-blue-400">google.com</code>)</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">2.</span>
+                            <span>Click <strong className="text-white">"DNS Lookup"</strong> or press Enter</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">3.</span>
+                            <span>View all DNS records organized by type (A, MX, TXT, etc.)</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Example Queries</h3>
+                    <div className="space-y-3">
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <code className="text-blue-400">google.com</code>
+                                <span className="text-zinc-500">→</span>
+                                <span className="text-sm text-zinc-400">Returns A records (IP addresses), MX records (mail servers), and more</span>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <code className="text-blue-400">github.com</code>
+                                <span className="text-zinc-500">→</span>
+                                <span className="text-sm text-zinc-400">Check nameservers, IP addresses, and email configuration</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

@@ -71,6 +71,76 @@ export default function WhoisClient() {
                     </div>
                 </div>
             )}
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is WHOIS Lookup?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        WHOIS Lookup is a query tool that retrieves detailed registration information about a domain name. It provides data about the domain owner, registrar, registration dates, expiration date, nameservers, and contact information (where publicly available after GDPR regulations).
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Domain Research:</strong> Check if a domain is registered or available for purchase</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Expiration Monitoring:</strong> Find when a domain is set to expire</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Registrar Information:</strong> Identify which company manages the domain registration</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Contact Details:</strong> Get public contact information for domain administrators</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
+                    <ol className="space-y-2 text-zinc-300">
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">1.</span>
+                            <span>Enter a domain name (e.g., <code className="px-2 py-1 bg-zinc-800 rounded text-blue-400">example.com</code>)</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">2.</span>
+                            <span>Click <strong className="text-white">"Lookup"</strong> or press Enter</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">3.</span>
+                            <span>Review registration details, nameservers, and expiration date</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Example Queries</h3>
+                    <div className="space-y-3">
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <code className="text-blue-400">google.com</code>
+                                <span className="text-zinc-500">→</span>
+                                <span className="text-sm text-zinc-400">View Google's domain registration details and nameservers</span>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <code className="text-blue-400">github.com</code>
+                                <span className="text-zinc-500">→</span>
+                                <span className="text-sm text-zinc-400">Check registrar, creation date, and expiration information</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

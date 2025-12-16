@@ -80,6 +80,76 @@ export default function PingClient() {
                     </div>
                 </div>
             )}
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is Ping Test?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        Ping Test is a network diagnostic tool that sends ICMP echo request packets to a target host and measures the round-trip time. It helps determine if a server or website is reachable, measures network latency, and identifies packet loss issues. This is essential for diagnosing connectivity problems and network performance.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Website Availability:</strong> Check if a website or server is online and responding</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Network Latency:</strong> Measure response time between your location and a server</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Connectivity Issues:</strong> Diagnose network problems and packet loss</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Performance Monitoring:</strong> Test connection quality to gaming servers or CDNs</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
+                    <ol className="space-y-2 text-zinc-300">
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">1.</span>
+                            <span>Enter a hostname or IP address (e.g., <code className="px-2 py-1 bg-zinc-800 rounded text-blue-400">google.com</code> or <code className="px-2 py-1 bg-zinc-800 rounded text-blue-400">8.8.8.8</code>)</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">2.</span>
+                            <span>Click <strong className="text-white">"Ping"</strong> or press Enter</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">3.</span>
+                            <span>View response times, packet loss, and round-trip statistics</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Example Queries</h3>
+                    <div className="space-y-3">
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <code className="text-blue-400">google.com</code>
+                                <span className="text-zinc-500">→</span>
+                                <span className="text-sm text-zinc-400">Check Google's server response time and availability</span>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <code className="text-blue-400">8.8.8.8</code>
+                                <span className="text-zinc-500">→</span>
+                                <span className="text-sm text-zinc-400">Test connectivity to Google's DNS server</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
