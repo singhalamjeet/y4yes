@@ -80,6 +80,71 @@ export default function TracerouteClient() {
                     </div>
                 </div>
             )}
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is Traceroute?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        Traceroute is a network diagnostic tool that maps the path data packets take from your location to a destination server. It shows each hop (router/server) along the route, their IP addresses, and response times. This helps identify network bottlenecks, routing issues, and pinpoint where connectivity problems occur in the path.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Network Diagnostics:</strong> Identify where packets are getting delayed or lost</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Routing Analysis:</strong> See what path your data takes to reach a destination</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Performance Issues:</strong> Diagnose high latency by finding slow hops</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Geographic Path:</strong> Discover which countries/networks your data passes through</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
+                    <ol className="space-y-2 text-zinc-300">
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">1.</span>
+                            <span>Enter a hostname or IP address (e.g., <code className="px-2 py-1 bg-zinc-800 rounded text-blue-400">google.com</code>)</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">2.</span>
+                            <span>Click <strong className="text-white">"Trace"</strong> to start mapping the route</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">3.</span>
+                            <span>Review each hop, its IP address, and response time in milliseconds</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Understanding Results</h3>
+                    <div className="space-y-2">
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">Hop Number:</strong> <span className="text-zinc-400">Each router/server in the path (usually 5-20 hops)</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">IP Address:</strong> <span className="text-zinc-400">The router's address at that hop</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">Response Time:</strong> <span className="text-zinc-400">Round-trip time to that hop (lower is better)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

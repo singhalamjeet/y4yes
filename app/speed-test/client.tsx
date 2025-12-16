@@ -235,6 +235,71 @@ export default function SpeedTestClient() {
             <div className="text-center text-sm text-zinc-500">
                 <p>Server: Localhost • Results may vary based on network conditions</p>
             </div>
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is Internet Speed Test?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        Internet Speed Test measures your current internet connection's download and upload speeds, plus network latency (ping). It tests your bandwidth by transferring data between your device and our servers, providing accurate measurements of your real-world internet performance. This helps diagnose slow connections and verify your ISP is delivering promised speeds.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">ISP Verification:</strong> Check if you're getting the speeds you're paying for</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Troubleshooting:</strong> Diagnose slow connections or streaming buffering issues</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Network Optimization:</strong> Test different WiFi locations or routers</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Gaming Performance:</strong> Check latency and bandwidth for online gaming</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
+                    <ol className="space-y-2 text-zinc-300">
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">1.</span>
+                            <span>Click the <strong className="text-white">"GO"</strong> button to start the speed test</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">2.</span>
+                            <span>Wait for ping, download, and upload tests to complete</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">3.</span>
+                            <span>Review your results: ping (latency), download & upload speeds</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Understanding Results</h3>
+                    <div className="space-y-2">
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">Ping:</strong> <span className="text-zinc-400">Lower is better (under 30ms excellent for gaming)</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">Download:</strong> <span className="text-zinc-400">Affects streaming, browsing (25+ Mbps for HD video)</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">Upload:</strong> <span className="text-zinc-400">Important for video calls, file sharing (5+ Mbps recommended)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

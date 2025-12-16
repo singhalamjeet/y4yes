@@ -89,6 +89,74 @@ export default function UrlEncodeClient() {
                     </div>
                 </div>
             </div>
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is URL Encoder/Decoder?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        URL Encoder/Decoder safely converts special characters in URLs to percent-encoded format and vice versa. It ensures characters like spaces, symbols, and non-ASCII characters are properly formatted for web transmission. This prevents broken links and ensures URLs work correctly across all browsers and systems.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">API Development:</strong> Encode parameters before sending in HTTP requests</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Query Strings:</strong> Properly format search parameters with special characters</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Debugging:</strong> Decode URL-encoded strings to read the actual values</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Data Safety:</strong> Ensure URLs don't break with spaces or special symbols</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
+                    <ol className="space-y-2 text-zinc-300">
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">1.</span>
+                            <span>Select <strong className="text-white">"Encode"</strong> or <strong className="text-white">"Decode"</strong> mode</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">2.</span>
+                            <span>Paste your text or URL into the input field</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="text-blue-400 font-bold">3.</span>
+                            <span>Click the button to process, then copy the result</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Examples</h3>
+                    <div className="space-y-3">
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="text-sm text-zinc-500 mb-1">Original:</div>
+                            <code className="text-blue-400">Hello World!</code>
+                            <div className="text-sm text-zinc-500 mt-2 mb-1">Encoded:</div>
+                            <code className="text-green-400">Hello%20World%21</code>
+                        </div>
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="text-sm text-zinc-500 mb-1">Original:</div>
+                            <code className="text-blue-400">user@example.com</code>
+                            <div className="text-sm text-zinc-500 mt-2 mb-1">Encoded:</div>
+                            <code className="text-green-400">user%40example.com</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
