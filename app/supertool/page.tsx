@@ -527,6 +527,16 @@ export default function SuperToolPage() {
                 </div>
             </div>
 
+            {/* Error */}
+            {error && (
+                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+                    {error}
+                </div>
+            )}
+
+            {/* Results */}
+            {results && renderResults()}
+
             {/* Comprehensive Tools List - SEO Optimized */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* DNS & Domain Tools */}
@@ -581,16 +591,6 @@ export default function SuperToolPage() {
                     </ul>
                 </div>
             </div>
-
-            {/* Error */}
-            {error && (
-                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
-                    {error}
-                </div>
-            )}
-
-            {/* Results */}
-            {results && renderResults()}
         </div>
     );
 }
