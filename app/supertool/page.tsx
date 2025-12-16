@@ -438,25 +438,81 @@ export default function SuperToolPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-8">
-            <div className="space-y-4">
-                <h1 className="text-4xl font-bold">SuperTool</h1>
-                <p className="text-zinc-400">All of your network tools in one place. Enter a domain once and run multiple diagnostic tools instantly.</p>
-                <p className="text-zinc-300 text-sm max-w-3xl">
-                    <strong className="text-white">SuperTool</strong> consolidates 20+ network utilities into a single powerful interface. Switch between DNS lookups, SSL checks, blacklist monitoring, domain health analysis, and more without re-entering your domain. Perfect for system administrators and developers who need comprehensive network diagnostics in one place.
+            {/* Header Section - Centered */}
+            <div className="text-center space-y-4 max-w-4xl mx-auto">
+                <h1 className="text-4xl font-bold">SuperTool - All-in-One Network Diagnostic Suite</h1>
+                <p className="text-zinc-400 text-lg">Enter a domain once and run 20+ network diagnostic tools instantly from a single interface.</p>
+                <p className="text-zinc-300">
+                    <strong className="text-white">SuperTool</strong> consolidates essential network utilities into one powerful platform. Switch between DNS lookups, SSL certificate checks, email blacklist monitoring, domain health analysis, and more without re-entering your domain. Ideal for system administrators, developers, and IT professionals.
                 </p>
+            </div>
 
-                {/* Available Tools List */}
-                <div className="mt-6 p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
-                    <h3 className="text-lg font-semibold text-white mb-4">Available Tools ({tools.length})</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-sm">
-                        {tools.map(tool => (
-                            <div key={tool.id} className="flex items-center gap-2 text-zinc-300">
-                                <span className="text-blue-400">•</span>
-                                <span>{tool.name}</span>
-                                {tool.popular && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400">Popular</span>}
-                            </div>
-                        ))}
-                    </div>
+            {/* Comprehensive Tools List - SEO Optimized */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* DNS & Domain Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">🌐</span> DNS & Domain Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">DNS Lookup:</strong> Query A, AAAA, MX, TXT, NS, CNAME, SOA, and SRV records</li>
+                        <li><strong className="text-white">WHOIS Lookup:</strong> Domain registration and ownership information</li>
+                        <li><strong className="text-white">Domain Health:</strong> Comprehensive domain configuration analysis</li>
+                        <li><strong className="text-white">Reverse DNS:</strong> IP to hostname resolution</li>
+                    </ul>
+                </div>
+
+                {/* Email Security Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">📧</span> Email Security Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">MX Lookup:</strong> Mail server records and email routing</li>
+                        <li><strong className="text-white">SPF Record Check:</strong> Sender Policy Framework validation</li>
+                        <li><strong className="text-white">DKIM Lookup:</strong> DomainKeys Identified Mail authentication</li>
+                        <li><strong className="text-white">DMARC Lookup:</strong> Email authentication policy verification</li>
+                        <li><strong className="text-white">Blacklist Check:</strong> Email blacklist monitoring across 45+ RBLs</li>
+                    </ul>
+                </div>
+
+                {/* Security & SSL Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">🔒</span> Security & SSL Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">SSL Certificate Check:</strong> HTTPS certificate validation and expiration</li>
+                        <li><strong className="text-white">HTTPS Lookup:</strong> Secure connection verification</li>
+                        <li><strong className="text-white">Port Scanner:</strong> Open port detection for security audits</li>
+                        <li><strong className="text-white">HTTP Lookup:</strong> Web server configuration check</li>
+                    </ul>
+                </div>
+
+                {/* Network Diagnostic Tools */}
+                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="text-2xl">🔍</span> Network Diagnostic Tools
+                    </h3>
+                    <ul className="space-y-2 text-sm text-zinc-300">
+                        <li><strong className="text-white">Ping Test:</strong> Server availability and latency monitoring</li>
+                        <li><strong className="text-white">Traceroute:</strong> Network path visualization and hop analysis</li>
+                        <li><strong className="text-white">TXT Record Lookup:</strong> Text record verification for domain validation</li>
+                    </ul>
+                </div>
+            </div>
+
+            {/* Popular Tools Quick Access */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    <span className="text-2xl">⭐</span> Most Popular Tools
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                    {tools.filter(t => t.popular).map(tool => (
+                        <span key={tool.id} className="px-4 py-2 rounded-lg bg-orange-500/20 text-orange-300 text-sm font-medium border border-orange-500/30">
+                            {tool.name}
+                        </span>
+                    ))}
                 </div>
             </div>
 
