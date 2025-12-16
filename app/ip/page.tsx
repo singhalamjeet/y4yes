@@ -101,6 +101,69 @@ export default async function IpPage() {
             <div className="text-center text-sm text-zinc-500">
                 <p>Note: We use multiple methods to detect your IP. If you are behind a proxy, this may show the proxy's IP.</p>
             </div>
+
+            {/* Informational Section */}
+            <div className="mt-12 p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white mb-4">What is My IP Address?</h2>
+                    <p className="text-zinc-300 leading-relaxed">
+                        Your IP Address (Internet Protocol Address) is a unique numerical identifier assigned to your device when connected to the internet. It serves as your device's address, allowing other computers and servers to send data back to you. This tool instantly displays your public IP address along with your location and Internet Service Provider (ISP) information.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Common Use Cases</h3>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Remote Access Setup:</strong> Need your IP address to configure remote desktop or VPN access</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Troubleshooting:</strong> Verify your IP address when diagnosing network connectivity issues</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Server Configuration:</strong> Whitelist your IP for server access or firewall rules</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-blue-400 mt-1">•</span>
+                            <span><strong className="text-white">Privacy Check:</strong> Verify if your VPN is working by checking if your IP changed</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Understanding Your IP Information</h3>
+                    <div className="space-y-2">
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">IP Address:</strong> <span className="text-zinc-400">Your unique identifier on the internet</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">Location:</strong> <span className="text-zinc-400">Approximate geographic location (city/region/country)</span>
+                        </div>
+                        <div className="p-3 bg-zinc-800/50 rounded-lg">
+                            <strong className="text-white">ISP:</strong> <span className="text-zinc-400">Your Internet Service Provider (company providing internet access)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">IPv4 vs IPv6</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="font-medium text-white mb-2">IPv4</div>
+                            <div className="text-sm text-zinc-400">Format: 192.168.1.1 (4 numbers)</div>
+                            <div className="text-sm text-zinc-400">Most common address type</div>
+                        </div>
+                        <div className="p-4 bg-zinc-800/50 rounded-lg">
+                            <div className="font-medium text-white mb-2">IPv6</div>
+                            <div className="text-sm text-zinc-400">Format: 2001:0db8::1 (hexadecimal)</div>
+                            <div className="text-sm text-zinc-400">Newer, more addresses available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
