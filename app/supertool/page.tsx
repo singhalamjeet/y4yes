@@ -444,6 +444,20 @@ export default function SuperToolPage() {
                 <p className="text-zinc-300 text-sm max-w-3xl">
                     <strong className="text-white">SuperTool</strong> consolidates 20+ network utilities into a single powerful interface. Switch between DNS lookups, SSL checks, blacklist monitoring, domain health analysis, and more without re-entering your domain. Perfect for system administrators and developers who need comprehensive network diagnostics in one place.
                 </p>
+
+                {/* Available Tools List */}
+                <div className="mt-6 p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                    <h3 className="text-lg font-semibold text-white mb-4">Available Tools ({tools.length})</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-sm">
+                        {tools.map(tool => (
+                            <div key={tool.id} className="flex items-center gap-2 text-zinc-300">
+                                <span className="text-blue-400">•</span>
+                                <span>{tool.name}</span>
+                                {tool.popular && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400">Popular</span>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* Network Dashboard */}
