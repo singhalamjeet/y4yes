@@ -10,13 +10,6 @@ interface LocationInfo {
     isp: string;
 }
 
-interface TestResult {
-    size: string;
-    speed: number;
-    latency: number;
-    jitter: number;
-}
-
 export default function SpeedTestClient() {
     const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
     const [downloadSpeed, setDownloadSpeed] = useState<number | null>(null);
@@ -28,15 +21,7 @@ export default function SpeedTestClient() {
     // Detailed metrics
     const [idleLatency, setIdleLatency] = useState<number | null>(null);
     const [idleJitter, setIdleJitter] = useState<number | null>(null);
-    const [downloadLatency, setDownloadLatency] = useState<number | null>(null);
-    const [downloadJitter, setDownloadJitter] = useState<number | null>(null);
-    const [uploadLatency, setUploadLatency] = useState<number | null>(null);
-    const [uploadJitter, setUploadJitter] = useState<number | null>(null);
     const [packetLoss, setPacketLoss] = useState<number | null>(null);
-
-    // Test results for each phase
-    const [downloadResults, setDownloadResults] = useState<TestResult[]>([]);
-    const [uploadResults, setUploadResults] = useState<TestResult[]>([]);
 
     useEffect(() => {
         fetchLocationInfo();
@@ -60,24 +45,25 @@ export default function SpeedTestClient() {
         }
     };
 
-    const measureLatencyJitter = async (url: string, samples: number = 10) => {
-        const times: number[] = [];
-        let failed = 0;
+    // User-provided latency test logic
+    const measureLatency = async (samples = 10) => {
+        const url = "https://speed.cloudflare.com/__down?bytes=1";
+        const times = [];
 
         for (let i = 0; i < samples; i++) {
             const t0 = performance.now();
             try {
-                await fetch(url, { cache: 'no-store' });
+                await fetch(url, { cache: "no-store" });
                 times.push(performance.now() - t0);
             } catch {
-                failed++;
+                times.push(null);
             }
         }
 
-        const valid = times.filter(t => t > 0);
-        if (valid.length === 0) return { latency: 0, jitter: 0, packetLoss: (failed / samples) * 100 };
+        const valid = times.filter((t): t is number => t !== null);
+        if (valid.length === 0) return { latency_ms: 0, jitter_ms: 0, packet_loss: 100 };
 
-        const latency = valid.reduce((a, b) => a + b, 0) / valid.length;
+        const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
 
         let jitter = 0;
         for (let i = 1; i < valid.length; i++) {
@@ -85,7 +71,11 @@ export default function SpeedTestClient() {
         }
         jitter /= Math.max(1, valid.length - 1);
 
-        return { latency, jitter, packetLoss: (failed / samples) * 100 };
+        return {
+            latency_ms: avg,
+            jitter_ms: jitter,
+            packet_loss: ((samples - valid.length) / samples) * 100
+        };
     };
 
     const runTest = async () => {
@@ -94,165 +84,110 @@ export default function SpeedTestClient() {
         setUploadSpeed(null);
         setIdleLatency(null);
         setIdleJitter(null);
-        setDownloadLatency(null);
-        setDownloadJitter(null);
-        setUploadLatency(null);
-        setUploadJitter(null);
         setPacketLoss(null);
-        setDownloadResults([]);
-        setUploadResults([]);
         setProgress(0);
 
         try {
-            // 1. Idle Latency & Jitter Test
+            // 1. Latency & Jitter Test
             setCurrentTest('Testing latency...');
-            const idleMetrics = await measureLatencyJitter('https://speed.cloudflare.com/__down?bytes=1000', 20);
-            setIdleLatency(Math.round(idleMetrics.latency));
-            setIdleJitter(Math.round(idleMetrics.jitter * 10) / 10);
-            setPacketLoss(idleMetrics.packetLoss);
+
+            // Run latency test twice and average as requested
+            const latencyRun1 = await measureLatency(10);
             setProgress(10);
+            const latencyRun2 = await measureLatency(10);
+            setProgress(20);
 
-            // 2. Progressive Download Tests
-            const downloadSizes = [
-                { bytes: 100 * 1024, label: '100kB' },
-                { bytes: 1 * 1024 * 1024, label: '1MB' },
-                { bytes: 10 * 1024 * 1024, label: '10MB' },
-                { bytes: 25 * 1024 * 1024, label: '25MB' }
-            ];
+            const avgLatency = (latencyRun1.latency_ms + latencyRun2.latency_ms) / 2;
+            const avgJitter = (latencyRun1.jitter_ms + latencyRun2.jitter_ms) / 2;
+            const avgPacketLoss = (latencyRun1.packet_loss + latencyRun2.packet_loss) / 2;
 
-            const downloadTestResults: TestResult[] = [];
-            let totalDownloadSpeed = 0;
-            let downloadLatencySum = 0;
-            let downloadJitterSum = 0;
+            setIdleLatency(Math.round(avgLatency));
+            setIdleJitter(Math.round(avgJitter * 10) / 10);
+            setPacketLoss(avgPacketLoss);
 
-            for (let i = 0; i < downloadSizes.length; i++) {
-                const { bytes, label } = downloadSizes[i];
-                setCurrentTest(`Download test: ${label}...`);
+            // 2. Download Speed Test (Run twice and average)
+            setCurrentTest('Testing download speed...');
+            const downloadSize = 25 * 1024 * 1024; // 25MB
+            const downloadSpeeds: number[] = [];
 
-                // Multiple iterations for accuracy
-                const iterations = i === 0 ? 3 : i === 1 ? 3 : i === 2 ? 2 : 2;
-                const speeds: number[] = [];
-                const latencies: number[] = [];
+            // Pass 1
+            try {
+                const t0 = performance.now();
+                const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${downloadSize}`, { cache: 'no-store' });
+                await response.blob();
+                const duration = (performance.now() - t0) / 1000;
+                const speed = (downloadSize * 8) / (duration * 1000 * 1000);
+                downloadSpeeds.push(speed);
+                setDownloadSpeed(speed);
+            } catch (e) {
+                console.error('Download pass 1 failed', e);
+            }
+            setProgress(50);
 
-                for (let j = 0; j < iterations; j++) {
-                    const url = `https://speed.cloudflare.com/__down?bytes=${bytes}`;
-                    const t0 = performance.now();
-                    try {
-                        const response = await fetch(url, { cache: 'no-store' });
-                        await response.blob();
-                        const duration = (performance.now() - t0) / 1000;
-                        const speedMbps = (bytes * 8) / (duration * 1000 * 1000);
-                        speeds.push(speedMbps);
-                        latencies.push(performance.now() - t0);
-                    } catch (e) {
-                        console.error('Download test error:', e);
-                    }
-                }
+            // Pass 2
+            try {
+                const t0 = performance.now();
+                const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${downloadSize}`, { cache: 'no-store' });
+                await response.blob();
+                const duration = (performance.now() - t0) / 1000;
+                const speed = (downloadSize * 8) / (duration * 1000 * 1000);
+                downloadSpeeds.push(speed);
+                setDownloadSpeed(speed);
+            } catch (e) {
+                console.error('Download pass 2 failed', e);
+            }
+            setProgress(80);
 
-                if (speeds.length > 0) {
-                    const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
-                    const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
-
-                    let jitter = 0;
-                    for (let k = 1; k < latencies.length; k++) {
-                        jitter += Math.abs(latencies[k] - latencies[k - 1]);
-                    }
-                    jitter /= Math.max(1, latencies.length - 1);
-
-                    downloadTestResults.push({
-                        size: label,
-                        speed: avgSpeed,
-                        latency: avgLatency,
-                        jitter: jitter
-                    });
-
-                    totalDownloadSpeed += avgSpeed;
-                    downloadLatencySum += avgLatency;
-                    downloadJitterSum += jitter;
-                }
-
-                setProgress(10 + (i + 1) * 12);
+            if (downloadSpeeds.length > 0) {
+                const avgDownload = downloadSpeeds.reduce((a, b) => a + b, 0) / downloadSpeeds.length;
+                setDownloadSpeed(avgDownload);
             }
 
-            setDownloadResults(downloadTestResults);
-            setDownloadSpeed(totalDownloadSpeed / downloadSizes.length);
-            setDownloadLatency(Math.round(downloadLatencySum / downloadSizes.length));
-            setDownloadJitter(Math.round((downloadJitterSum / downloadSizes.length) * 10) / 10);
-            setProgress(60);
+            // 3. Upload Speed Test (Run twice and average)
+            setCurrentTest('Testing upload speed...');
+            const uploadSize = 10 * 1024 * 1024; // 10MB
+            const uploadSpeeds: number[] = [];
 
-            // 3. Progressive Upload Tests
-            const uploadSizes = [
-                { bytes: 100 * 1024, label: '100kB' },
-                { bytes: 1 * 1024 * 1024, label: '1MB' },
-                { bytes: 10 * 1024 * 1024, label: '10MB' },
-                { bytes: 25 * 1024 * 1024, label: '25MB' }
-            ];
-
-            const uploadTestResults: TestResult[] = [];
-            let totalUploadSpeed = 0;
-            let uploadLatencySum = 0;
-            let uploadJitterSum = 0;
-
-            for (let i = 0; i < uploadSizes.length; i++) {
-                const { bytes, label } = uploadSizes[i];
-                setCurrentTest(`Upload test: ${label}...`);
-
-                const iterations = i === 0 ? 2 : i === 1 ? 2 : i === 2 ? 2 : 2;
-                const speeds: number[] = [];
-                const latencies: number[] = [];
-
-                for (let j = 0; j < iterations; j++) {
-                    const uploadData = new Uint8Array(bytes);
-                    for (let k = 0; k < uploadData.length; k++) {
-                        uploadData[k] = Math.floor(Math.random() * 256);
-                    }
-
-                    const t0 = performance.now();
-                    try {
-                        await fetch('https://speed.cloudflare.com/__up', {
-                            method: 'POST',
-                            body: uploadData,
-                            cache: 'no-store',
-                        });
-                        const duration = (performance.now() - t0) / 1000;
-                        const speedMbps = (bytes * 8) / (duration * 1000 * 1000);
-                        speeds.push(speedMbps);
-                        latencies.push(performance.now() - t0);
-                    } catch (e) {
-                        console.error('Upload test error:', e);
-                    }
-                }
-
-                if (speeds.length > 0) {
-                    const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
-                    const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
-
-                    let jitter = 0;
-                    for (let k = 1; k < latencies.length; k++) {
-                        jitter += Math.abs(latencies[k] - latencies[k - 1]);
-                    }
-                    jitter /= Math.max(1, latencies.length - 1);
-
-                    uploadTestResults.push({
-                        size: label,
-                        speed: avgSpeed,
-                        latency: avgLatency,
-                        jitter: jitter
-                    });
-
-                    totalUploadSpeed += avgSpeed;
-                    uploadLatencySum += avgLatency;
-                    uploadJitterSum += jitter;
-                }
-
-                setProgress(60 + (i + 1) * 10);
+            // Pass 1
+            try {
+                const uploadData = new Uint8Array(uploadSize).map(() => Math.floor(Math.random() * 256));
+                const t0 = performance.now();
+                await fetch('https://speed.cloudflare.com/__up', {
+                    method: 'POST',
+                    body: uploadData,
+                    cache: 'no-store',
+                });
+                const duration = (performance.now() - t0) / 1000;
+                const speed = (uploadSize * 8) / (duration * 1000 * 1000);
+                uploadSpeeds.push(speed);
+                setUploadSpeed(speed);
+            } catch (e) {
+                console.error('Upload pass 1 failed', e);
             }
+            setProgress(90);
 
-            setUploadResults(uploadTestResults);
-            setUploadSpeed(totalUploadSpeed / uploadSizes.length);
-            setUploadLatency(Math.round(uploadLatencySum / uploadSizes.length));
-            setUploadJitter(Math.round((uploadJitterSum / uploadSizes.length) * 10) / 10);
+            // Pass 2
+            try {
+                const uploadData = new Uint8Array(uploadSize).map(() => Math.floor(Math.random() * 256));
+                const t0 = performance.now();
+                await fetch('https://speed.cloudflare.com/__up', {
+                    method: 'POST',
+                    body: uploadData,
+                    cache: 'no-store',
+                });
+                const duration = (performance.now() - t0) / 1000;
+                const speed = (uploadSize * 8) / (duration * 1000 * 1000);
+                uploadSpeeds.push(speed);
+                setUploadSpeed(speed);
+            } catch (e) {
+                console.error('Upload pass 2 failed', e);
+            }
             setProgress(100);
+
+            if (uploadSpeeds.length > 0) {
+                const avgUpload = uploadSpeeds.reduce((a, b) => a + b, 0) / uploadSpeeds.length;
+                setUploadSpeed(avgUpload);
+            }
 
             setCurrentTest('Complete!');
         } catch (e) {
@@ -275,19 +210,16 @@ export default function SpeedTestClient() {
         if (!downloadSpeed || !uploadSpeed || !idleLatency || !idleJitter) return { label: '—', color: 'text-zinc-500' };
 
         if (metric === 'streaming') {
-            // Mainly download dependent
             if (downloadSpeed > 25 && idleLatency! < 100) return { label: 'Excellent', color: 'text-green-400' };
             if (downloadSpeed > 10) return { label: 'Good', color: 'text-blue-400' };
             if (downloadSpeed > 5) return { label: 'Fair', color: 'text-yellow-400' };
             return { label: 'Poor', color: 'text-red-400' };
         } else if (metric === 'gaming') {
-            // Latency and jitter critical
             if (idleLatency < 30 && idleJitter < 10) return { label: 'Excellent', color: 'text-green-400' };
             if (idleLatency < 60 && idleJitter < 20) return { label: 'Good', color: 'text-blue-400' };
             if (idleLatency < 100) return { label: 'Fair', color: 'text-yellow-400' };
             return { label: 'Poor', color: 'text-red-400' };
         } else {
-            // Video chatting - upload, latency, jitter
             if (uploadSpeed > 5 && idleLatency < 50 && idleJitter < 15) return { label: 'Excellent', color: 'text-green-400' };
             if (uploadSpeed > 2 && idleLatency < 100) return { label: 'Good', color: 'text-blue-400' };
             if (uploadSpeed > 1) return { label: 'Fair', color: 'text-yellow-400' };
@@ -402,35 +334,23 @@ export default function SpeedTestClient() {
                     {/* Detailed Metrics Table */}
                     <div className="p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800">
                         <h3 className="text-xl font-bold text-white mb-6">Detailed Metrics</h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-zinc-800">
-                                        <th className="text-left py-3 px-4 text-sm font-medium text-zinc-400">Metric</th>
-                                        <th className="text-right py-3 px-4 text-sm font-medium text-zinc-400">Idle</th>
-                                        <th className="text-right py-3 px-4 text-sm font-medium text-zinc-400">Download</th>
-                                        <th className="text-right py-3 px-4 text-sm font-medium text-zinc-400">Upload</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="border-b border-zinc-800/50">
-                                        <td className="py-3 px-4 text-white font-medium">Latency</td>
-                                        <td className="py-3 px-4 text-right text-zinc-300">{idleLatency !== null ? `${idleLatency} ms` : '—'}</td>
-                                        <td className="py-3 px-4 text-right text-zinc-300">{downloadLatency !== null ? `${downloadLatency} ms` : '—'}</td>
-                                        <td className="py-3 px-4 text-right text-zinc-300">{uploadLatency !== null ? `${uploadLatency} ms` : '—'}</td>
-                                    </tr>
-                                    <tr className="border-b border-zinc-800/50">
-                                        <td className="py-3 px-4 text-white font-medium">Jitter</td>
-                                        <td className="py-3 px-4 text-right text-zinc-300">{idleJitter !== null ? `${idleJitter} ms` : '—'}</td>
-                                        <td className="py-3 px-4 text-right text-zinc-300">{downloadJitter !== null ? `${downloadJitter} ms` : '—'}</td>
-                                        <td className="py-3 px-4 text-right text-zinc-300">{uploadJitter !== null ? `${uploadJitter} ms` : '—'}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="py-3 px-4 text-white font-medium">Packet Loss</td>
-                                        <td className="py-3 px-4 text-right text-zinc-300" colSpan={3}>{packetLoss !== null ? `${packetLoss.toFixed(1)} %` : '—'}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="p-4 bg-zinc-800/50 rounded-lg">
+                                <div className="text-xs text-zinc-500 uppercase mb-2">Latency</div>
+                                <div className="text-2xl font-bold text-white">{idleLatency} ms</div>
+                            </div>
+                            <div className="p-4 bg-zinc-800/50 rounded-lg">
+                                <div className="text-xs text-zinc-500 uppercase mb-2">Jitter</div>
+                                <div className="text-2xl font-bold text-white">{idleJitter} ms</div>
+                            </div>
+                            <div className="p-4 bg-zinc-800/50 rounded-lg">
+                                <div className="text-xs text-zinc-500 uppercase mb-2">Packet Loss</div>
+                                <div className="text-2xl font-bold text-white">{packetLoss?.toFixed(1)}%</div>
+                            </div>
+                            <div className="p-4 bg-zinc-800/50 rounded-lg">
+                                <div className="text-xs text-zinc-500 uppercase mb-2">Server</div>
+                                <div className="text-lg font-bold text-blue-400">Cloudflare</div>
+                            </div>
                         </div>
                     </div>
 
@@ -476,7 +396,7 @@ export default function SpeedTestClient() {
                 <div>
                     <h2 className="text-2xl font-bold text-white mb-4">What is Internet Speed Test?</h2>
                     <p className="text-zinc-300 leading-relaxed">
-                        Internet Speed Test measures your current internet connection's download and upload speeds, plus network latency (ping). It tests your bandwidth by transferring data between your device and Cloudflare servers, providing accurate measurements of your real-world internet performance. This helps diagnose slow connections and verify your ISP is delivering promised speeds.
+                        Internet Speed Test measures your current internet connection's download and upload speeds, plus network latency (ping). It tests your bandwidth by transferring data between your device and Cloudflare servers, providing accurate measurements of your real-world internet performance.
                     </p>
                 </div>
 
@@ -500,24 +420,6 @@ export default function SpeedTestClient() {
                             <span><strong className="text-white">Gaming Performance:</strong> Check latency and bandwidth for online gaming</span>
                         </li>
                     </ul>
-                </div>
-
-                <div>
-                    <h3 className="text-xl font-semibold text-white mb-3">How to Use</h3>
-                    <ol className="space-y-2 text-zinc-300">
-                        <li className="flex gap-3">
-                            <span className="text-blue-400 font-bold">1.</span>
-                            <span>Click the <strong className="text-white">"GO"</strong> button to start the speed test</span>
-                        </li>
-                        <li className="flex gap-3">
-                            <span className="text-blue-400 font-bold">2.</span>
-                            <span>Wait for latency, download, and upload tests to complete</span>
-                        </li>
-                        <li className="flex gap-3">
-                            <span className="text-blue-400 font-bold">3.</span>
-                            <span>Review detailed results including network quality indicators</span>
-                        </li>
-                    </ol>
                 </div>
 
                 <div>
