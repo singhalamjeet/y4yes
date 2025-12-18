@@ -50,31 +50,46 @@ export default function SpeedTestClient() {
         setProgress(0);
 
         try {
-            // 1. Ping Test
-            setCurrentTest('Testing ping...');
-            const pingResults: number[] = [];
+            // 1. Latency & Jitter Test using Cloudflare
+            setCurrentTest('Testing latency & jitter...');
+            const latencyUrl = 'https://speed.cloudflare.com/__down?bytes=1000';
+            const latencySamples: number[] = [];
 
-            for (let i = 0; i < 5; i++) {
-                const startPing = performance.now();
-                await fetch('/api/dns?domain=google.com', { cache: 'no-store' });
-                const endPing = performance.now();
-                pingResults.push(endPing - startPing);
-                setProgress(i * 4);
+            for (let i = 0; i < 10; i++) {
+                const t0 = performance.now();
+                try {
+                    await fetch(latencyUrl, { cache: 'no-store' });
+                    latencySamples.push(performance.now() - t0);
+                } catch {
+                    latencySamples.push(0);
+                }
+                setProgress(i * 2);
             }
 
-            const avgPing = pingResults.reduce((a, b) => a + b, 0) / pingResults.length;
-            setPing(Math.round(avgPing));
+            const validLatency = latencySamples.filter(t => t > 0);
+            const avgLatency = validLatency.reduce((a, b) => a + b, 0) / validLatency.length;
+
+            // Calculate jitter
+            let jitter = 0;
+            for (let i = 1; i < validLatency.length; i++) {
+                jitter += Math.abs(validLatency[i] - validLatency[i - 1]);
+            }
+            jitter /= Math.max(1, validLatency.length - 1);
+
+            setPing(Math.round(avgLatency));
             setProgress(20);
 
-            // 2. Download Test
+            // 2. Download Test using Cloudflare
             setCurrentTest('Testing download speed...');
-            const downloadSize = 5 * 1024 * 1024; // 5MB
+            const downloadSize = 10 * 1024 * 1024; // 10MB
+            const downloadUrl = `https://speed.cloudflare.com/__down?bytes=${downloadSize}`;
 
             // Warm up
-            await fetch(`/api/download?size=100000`);
+            await fetch('https://speed.cloudflare.com/__down?bytes=100000', { cache: 'no-store' });
 
             const downloadStart = performance.now();
-            await fetch(`/api/download?size=${downloadSize}`, { cache: 'no-store' });
+            const downloadResponse = await fetch(downloadUrl, { cache: 'no-store' });
+            await downloadResponse.blob(); // Ensure full download
             const downloadEnd = performance.now();
 
             const downloadDuration = (downloadEnd - downloadStart) / 1000;
@@ -82,20 +97,26 @@ export default function SpeedTestClient() {
             setDownloadSpeed(downloadSpeedMbps);
             setProgress(60);
 
-            // 3. Upload Test
+            // 3. Upload Test using Cloudflare
             setCurrentTest('Testing upload speed...');
-            const uploadData = new Uint8Array(2 * 1024 * 1024); // 2MB
-            const uploadStart = performance.now();
+            const uploadSize = 5 * 1024 * 1024; // 5MB
+            const uploadData = new Uint8Array(uploadSize);
 
-            await fetch('/api/download', {
+            // Fill with random data
+            for (let i = 0; i < uploadData.length; i++) {
+                uploadData[i] = Math.floor(Math.random() * 256);
+            }
+
+            const uploadStart = performance.now();
+            await fetch('https://speed.cloudflare.com/__up', {
                 method: 'POST',
                 body: uploadData,
                 cache: 'no-store',
             });
-
             const uploadEnd = performance.now();
+
             const uploadDuration = (uploadEnd - uploadStart) / 1000;
-            const uploadSpeedMbps = (uploadData.length * 8) / (uploadDuration * 1000 * 1000);
+            const uploadSpeedMbps = (uploadSize * 8) / (uploadDuration * 1000 * 1000);
             setUploadSpeed(uploadSpeedMbps);
             setProgress(100);
 
@@ -233,7 +254,7 @@ export default function SpeedTestClient() {
             )}
 
             <div className="text-center text-sm text-zinc-500">
-                <p>Server: Localhost • Results may vary based on network conditions</p>
+                <p>Server: Cloudflare • Results may vary based on network conditions</p>
             </div>
 
             {/* Informational Section */}
