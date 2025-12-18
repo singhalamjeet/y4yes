@@ -292,26 +292,23 @@ export default function SpeedTestClient() {
                                     <div className="text-xs text-zinc-500 mt-1">{progress}%</div>
                                 </div>
                             ) : (
-                                <div className="text-center">
+                                <div className="text-center flex flex-col items-center">
                                     <div className={`text-7xl font-bold mb-2 ${getSpeedColor(downloadSpeed)}`}>
                                         {downloadSpeed?.toFixed(0)}
                                     </div>
-                                    <div className="text-lg text-zinc-500">Mbps</div>
+                                    <div className="text-lg text-zinc-500 mb-6">Mbps</div>
+                                    <button
+                                        onClick={runTest}
+                                        className="px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors shadow-lg shadow-blue-500/20"
+                                    >
+                                        Test Again
+                                    </button>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {!testing && downloadSpeed && (
-                        <div className="mt-8">
-                            <button
-                                onClick={runTest}
-                                className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors shadow-lg shadow-blue-500/20"
-                            >
-                                Test Again
-                            </button>
-                        </div>
-                    )}
+
 
                 </div>
             </div>
