@@ -301,6 +301,18 @@ export default function SpeedTestClient() {
                             )}
                         </div>
                     </div>
+
+                    {!testing && downloadSpeed && (
+                        <div className="mt-8">
+                            <button
+                                onClick={runTest}
+                                className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors shadow-lg shadow-blue-500/20"
+                            >
+                                Test Again
+                            </button>
+                        </div>
+                    )}
+
                 </div>
             </div>
 
@@ -376,14 +388,7 @@ export default function SpeedTestClient() {
                         </div>
                     </div>
 
-                    <div className="text-center">
-                        <button
-                            onClick={runTest}
-                            className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
-                        >
-                            Test Again
-                        </button>
-                    </div>
+
                 </>
             )}
 
