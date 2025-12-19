@@ -9,6 +9,23 @@ export function Navbar() {
         </Link>
         <div className="flex gap-6 items-center text-sm font-medium text-zinc-400">
           <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <div className="relative group">
+            <button className="hover:text-white transition-colors flex items-center gap-1">
+              Tools
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div className="absolute top-full left-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <Link href="/dns" className="block px-4 py-2 hover:bg-zinc-800 transition-colors">DNS Lookup</Link>
+              <Link href="/ip" className="block px-4 py-2 hover:bg-zinc-800 transition-colors">IP Lookup</Link>
+              <Link href="/port-scan" className="block px-4 py-2 hover:bg-zinc-800 transition-colors">Port Scanner</Link>
+              <Link href="/ping" className="block px-4 py-2 hover:bg-zinc-800 transition-colors">Ping Test</Link>
+              <Link href="/ssl-check" className="block px-4 py-2 hover:bg-zinc-800 transition-colors">SSL Checker</Link>
+              <Link href="/whois" className="block px-4 py-2 hover:bg-zinc-800 transition-colors">WHOIS Lookup</Link>
+              <Link href="/supertool" className="block px-4 py-2 hover:bg-zinc-800 transition-colors border-t border-zinc-800">SuperTool (All-in-One)</Link>
+            </div>
+          </div>
           <Link href="/about" className="hover:text-white transition-colors">About</Link>
           <a
             href="https://buymeacoffee.com/y4yes"

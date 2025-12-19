@@ -6,11 +6,24 @@ export function Footer() {
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
                     <div className="space-y-4">
+                        <h3 className="text-white font-semibold">Network Tools</h3>
+                        <ul className="space-y-2 text-sm text-zinc-400">
+                            <li><Link href="/dns" className="hover:text-blue-400 transition-colors">DNS Lookup</Link></li>
+                            <li><Link href="/ip" className="hover:text-blue-400 transition-colors">IP Lookup</Link></li>
+                            <li><Link href="/port-scan" className="hover:text-blue-400 transition-colors">Port Scanner</Link></li>
+                            <li><Link href="/ping" className="hover:text-blue-400 transition-colors">Ping Test</Link></li>
+                            <li><Link href="/ssl-check" className="hover:text-blue-400 transition-colors">SSL Checker</Link></li>
+                            <li><Link href="/whois" className="hover:text-blue-400 transition-colors">WHOIS Lookup</Link></li>
+                            <li><Link href="/traceroute" className="hover:text-blue-400 transition-colors">Traceroute</Link></li>
+                            <li><Link href="/speed-test" className="hover:text-blue-400 transition-colors">Speed Test</Link></li>
+                        </ul>
+                    </div>
+
+                    <div className="space-y-4">
                         <h3 className="text-white font-semibold">Product</h3>
                         <ul className="space-y-2 text-sm text-zinc-400">
-                            <li><Link href="/" className="hover:text-blue-400 transition-colors">Home</Link></li>
                             <li><Link href="/supertool" className="hover:text-blue-400 transition-colors">SuperTool</Link></li>
-                            <li><Link href="/speed-test" className="hover:text-blue-400 transition-colors">Speed Test</Link></li>
+                            <li><Link href="/sitemap-page" className="hover:text-blue-400 transition-colors">Sitemap</Link></li>
                             <li><Link href="/blog" className="hover:text-blue-400 transition-colors">Blog</Link></li>
                         </ul>
                     </div>
@@ -30,18 +43,6 @@ export function Footer() {
                             <li><Link href="/privacy" className="hover:text-blue-400 transition-colors">Privacy Policy</Link></li>
                             <li><Link href="/terms" className="hover:text-blue-400 transition-colors">Terms of Service</Link></li>
                         </ul>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h3 className="text-white font-semibold">y4yes</h3>
-                        <p className="text-sm text-zinc-400">
-                            Simple, fast, and secure network tools for developers and system administrators.
-                        </p>
-                        <p className="text-sm">
-                            <a href="mailto:y4yes@outlook.com" className="text-blue-400 hover:text-blue-300 transition-colors">
-                                y4yes@outlook.com
-                            </a>
-                        </p>
                     </div>
                 </div>
 

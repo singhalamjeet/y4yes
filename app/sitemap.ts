@@ -21,6 +21,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/ssl-check',
         '/traceroute',
         '/url-encode',
+        '/ip',
+        '/sitemap-page',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified: new Date(),
