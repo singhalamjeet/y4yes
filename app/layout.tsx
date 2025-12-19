@@ -61,6 +61,21 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@graph": [
                 {
+                  "@type": "WebSite",
+                  "@id": "https://y4yes.com/#website",
+                  "url": "https://y4yes.com",
+                  "name": "y4yes",
+                  "description": "Free network tools suite for developers and system administrators",
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": {
+                      "@type": "EntryPoint",
+                      "urlTemplate": "https://y4yes.com/supertool?q={search_term_string}"
+                    },
+                    "query-input": "required name=search_term_string"
+                  }
+                },
+                {
                   "@type": "SoftwareApplication",
                   "name": "y4yes Network Tools Suite",
                   "applicationCategory": "DeveloperApplication",

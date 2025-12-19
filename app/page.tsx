@@ -3,8 +3,8 @@ import { NetworkDashboard } from "@/components/NetworkDashboard";
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "y4yes - Free Network Tools: DNS Lookup, Port Scanner, Speed Test & SSL Check",
-  description: "Diagnose network issues instantly with y4yes. Free online tools for Developers and Admins: Check Public IP, DNS Propagation, SSL Status, Ping Test, and Port Scanning.",
+  title: "Free Network Tools Suite – DNS, IP, Port Scanner | y4yes",
+  description: "Access 10+ free network tools: DNS Lookup, IP Checker, Port Scanner, Ping Test, and SSL Checker. Fast, secure, no registration required.",
 };
 
 const tools = [

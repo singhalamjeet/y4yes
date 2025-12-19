@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import PingClient from './client';
 
 export const metadata: Metadata = {
-    title: 'Ping Test - Check Website Status & Latency',
-    description: 'Free Ping Test tool to check if a website or IP is up. Measure latency, packet loss, and server response time.',
+    title: 'Ping Test Tool – Check Server Response Time | y4yes',
+    description: 'Test server reachability and measure response times with our free ping tool. Live command-line output.',
     keywords: ['ping test', 'ping website', 'check server status', 'website down check', 'latency test', 'packet loss'],
 };
 
