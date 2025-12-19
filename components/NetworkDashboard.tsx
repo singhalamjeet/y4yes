@@ -23,25 +23,33 @@ export function NetworkDashboard() {
             await new Promise(resolve => setTimeout(resolve, 800));
 
             try {
-                // Use the general endpoint that auto-detects IP version
-                const res = await fetch('https://ipapi.co/json/');
+                // Primary: ipwho.is (Free, no key, generous limits)
+                const res = await fetch('https://ipwho.is/');
                 if (res.ok) {
                     const data = await res.json();
-                    setIpInfo(data);
-                } else {
-                    throw new Error('API failed');
+                    if (data.success) {
+                        setIpInfo({
+                            ip: data.ip,
+                            org: data.connection?.isp || data.connection?.org,
+                            city: data.city,
+                            country_name: data.country
+                        });
+                        return; // Success, exit
+                    }
                 }
+                // If primary fails logic (but not network), throw to catch
+                throw new Error('Primary API failed');
             } catch (e) {
-                console.error('Failed to fetch IP info:', e);
-                // Fallback: try to at least get the IP address
+                // Silently fail primary and try fallback to avoid console error noise
                 try {
+                    // Fallback: ipify (IP only, very reliable)
                     const ipRes = await fetch('https://api.ipify.org?format=json');
                     if (ipRes.ok) {
                         const ipData = await ipRes.json();
                         setIpInfo({ ip: ipData.ip });
                     }
                 } catch (fallbackError) {
-                    console.error('Fallback also failed:', fallbackError);
+                    // Fail silently
                 }
             } finally {
                 setScanning(false);
