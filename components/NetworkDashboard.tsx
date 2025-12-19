@@ -63,7 +63,7 @@ export function NetworkDashboard() {
         <div className="relative overflow-hidden rounded-xl bg-zinc-900/50 border border-zinc-800 px-6 py-3 min-h-[160px]">
             {/* Heading */}
             <div className="text-center mb-2">
-                <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Your Public IP</h3>
+                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Your Public IP</div>
             </div>
 
             {scanning ? (
@@ -88,14 +88,14 @@ export function NetworkDashboard() {
                 <div className="text-center space-y-2">
                     {/* IP Address */}
                     <div>
-                        <span className="text-xs font-semibold text-zinc-500 uppercase">IP: </span>
+                        <span className="text-xs font-semibold text-zinc-400 uppercase">IP: </span>
                         <span className="font-mono font-bold text-white break-all">{ipInfo.ip}</span>
                     </div>
 
                     {/* Provider */}
                     {ipInfo.org && (
                         <div>
-                            <span className="text-xs font-semibold text-zinc-500 uppercase">ISP: </span>
+                            <span className="text-xs font-semibold text-zinc-400 uppercase">ISP: </span>
                             <span className="font-medium text-zinc-300">{ipInfo.org.split(' ')[0]}</span>
                         </div>
                     )}
@@ -103,7 +103,7 @@ export function NetworkDashboard() {
                     {/* Location */}
                     {ipInfo.city && ipInfo.country_name && (
                         <div>
-                            <span className="text-xs font-semibold text-zinc-500 uppercase">Location: </span>
+                            <span className="text-xs font-semibold text-zinc-400 uppercase">Location: </span>
                             <span className="font-medium text-zinc-300">
                                 {ipInfo.city}, {ipInfo.country_name}
                             </span>
