@@ -34,7 +34,7 @@ export function Footer() {
 
                     <div className="space-y-4">
                         <h3 className="text-white font-semibold">y4yes</h3>
-                        <p className="text-sm text-zinc-500">
+                        <p className="text-sm text-zinc-400">
                             Simple, fast, and secure network tools for developers and system administrators.
                         </p>
                         <p className="text-sm">
@@ -45,7 +45,7 @@ export function Footer() {
                     </div>
                 </div>
 
-                <div className="pt-8 border-t border-zinc-800 text-center text-zinc-500 text-sm">
+                <div className="pt-8 border-t border-zinc-800 text-center text-zinc-400 text-sm">
                     <p>&copy; {new Date().getFullYear()} y4yes.com. All rights reserved.</p>
                 </div>
             </div>
