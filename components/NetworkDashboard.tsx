@@ -52,19 +52,29 @@ export function NetworkDashboard() {
     }, []);
 
     return (
-        <div className="relative overflow-hidden rounded-xl bg-zinc-900/50 border border-zinc-800 px-6 py-3">
+        <div className="relative overflow-hidden rounded-xl bg-zinc-900/50 border border-zinc-800 px-6 py-3 min-h-[160px]">
             {/* Heading */}
             <div className="text-center mb-2">
                 <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Your Public IP</h3>
             </div>
 
             {scanning ? (
-                <div className="flex items-center justify-center gap-3 py-2">
-                    <div className="relative w-5 h-5">
-                        <div className="absolute inset-0 rounded-full border-2 border-zinc-800"></div>
-                        <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+                <div className="space-y-3 py-1">
+                    {/* Skeleton for IP */}
+                    <div className="space-y-1">
+                        <div className="h-3 w-16 bg-zinc-800 rounded animate-pulse"></div>
+                        <div className="h-5 w-32 bg-zinc-800 rounded animate-pulse"></div>
                     </div>
-                    <div className="text-zinc-400 text-sm">Detecting Network...</div>
+                    {/* Skeleton for ISP */}
+                    <div className="space-y-1">
+                        <div className="h-3 w-10 bg-zinc-800 rounded animate-pulse"></div>
+                        <div className="h-4 w-24 bg-zinc-800 rounded animate-pulse"></div>
+                    </div>
+                    {/* Skeleton for Location */}
+                    <div className="space-y-1">
+                        <div className="h-3 w-14 bg-zinc-800 rounded animate-pulse"></div>
+                        <div className="h-4 w-40 bg-zinc-800 rounded animate-pulse"></div>
+                    </div>
                 </div>
             ) : ipInfo ? (
                 <div className="text-center space-y-2">
