@@ -1,5 +1,5 @@
 import { ToolCard } from "@/components/ToolCard";
-import { NetworkDashboard } from "@/components/NetworkDashboard";
+import { HomeSpeedTest } from "@/components/HomeSpeedTest";
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -67,7 +67,7 @@ export default function Home() {
         </p>
       </section>
 
-      <NetworkDashboard />
+      <HomeSpeedTest />
 
       <h2 className="sr-only">Available Network Tools</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
