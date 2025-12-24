@@ -2,6 +2,28 @@
 
 import { useState, useEffect } from 'react';
 
+// Adaptive Speed Test Configuration
+const ADAPTIVE_CONFIG = {
+    SIZES: {
+        SMALL: 1 * 1024 * 1024,   // 1MB
+        MEDIUM: 10 * 1024 * 1024,  // 10MB
+        LARGE: 25 * 1024 * 1024    // 25MB
+    },
+    FAST_THRESHOLD_SEC: {
+        SMALL: 2.0,
+        MEDIUM: 6.0,
+        LARGE: 15.0
+    },
+    MAX_TIMEOUT_MS: {
+        SMALL: 10000,
+        MEDIUM: 20000,
+        LARGE: 45000
+    },
+    REPS_PER_SIZE: 3,
+    MIN_SUCCESS_REPS: 2,
+    SLOW_ABORT_FACTOR: 2.5
+};
+
 interface IPInfo {
     ip: string;
     version?: string;
@@ -20,6 +42,71 @@ interface SpeedTestResults {
     jitter: number | null;
 }
 
+// Classification Types
+type RatingLabel = 'POOR' | 'BAD' | 'GOOD' | 'EXCELLENT';
+
+interface UseCaseRating {
+    label: RatingLabel;
+    recommended: string;
+}
+
+interface ClassifiedResults {
+    streaming: UseCaseRating;
+    gaming: UseCaseRating;
+    video_calls: UseCaseRating;
+}
+
+// Classification Functions
+function classifyResults(download_mbps: number, upload_mbps: number, latency_ms: number): ClassifiedResults {
+    // Streaming classification (download-focused)
+    let streaming: UseCaseRating;
+    if (download_mbps < 3) {
+        streaming = { label: 'POOR', recommended: 'SD may struggle' };
+    } else if (download_mbps < 5) {
+        streaming = { label: 'BAD', recommended: 'SD' };
+    } else if (download_mbps < 25) {
+        streaming = { label: 'GOOD', recommended: 'HD' };
+    } else {
+        streaming = { label: 'EXCELLENT', recommended: '4K' };
+    }
+
+    // Gaming classification (latency-focused)
+    let gaming: UseCaseRating;
+    const bandwidthTooLow = download_mbps < 3 || upload_mbps < 1;
+    if (latency_ms > 150 || bandwidthTooLow) {
+        gaming = { label: 'POOR', recommended: 'Not recommended' };
+    } else if (latency_ms > 80) {
+        gaming = { label: 'BAD', recommended: 'Casual only' };
+    } else if (latency_ms > 30) {
+        gaming = { label: 'GOOD', recommended: 'Casual' };
+    } else {
+        gaming = { label: 'EXCELLENT', recommended: 'Competitive' };
+    }
+
+    // Video calls classification (upload + latency)
+    let video_calls: UseCaseRating;
+    if (upload_mbps < 1 || latency_ms > 300) {
+        video_calls = { label: 'POOR', recommended: 'Audio-only' };
+    } else if (upload_mbps < 2 || latency_ms > 150) {
+        video_calls = { label: 'BAD', recommended: 'SD' };
+    } else if (upload_mbps < 5 || latency_ms > 50) {
+        video_calls = { label: 'GOOD', recommended: 'HD' };
+    } else {
+        video_calls = { label: 'EXCELLENT', recommended: 'HD+' };
+    }
+
+    return { streaming, gaming, video_calls };
+}
+
+function getLabelColor(label: RatingLabel): string {
+    switch (label) {
+        case 'EXCELLENT': return 'bg-green-500/20 text-green-400 border-green-500/30';
+        case 'GOOD': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+        case 'BAD': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+        case 'POOR': return 'bg-red-500/20 text-red-400 border-red-500/30';
+    }
+}
+
 export function HomeSpeedTest() {
     const [ipInfo, setIpInfo] = useState<IPInfo | null>(null);
     const [scanning, setScanning] = useState(true);
@@ -29,6 +116,7 @@ export function HomeSpeedTest() {
         latency: null,
         jitter: null,
     });
+    const [classifiedResults, setClassifiedResults] = useState<ClassifiedResults | null>(null);
     const [testing, setTesting] = useState(false);
     const [currentTest, setCurrentTest] = useState('');
     const [progress, setProgress] = useState(0);
@@ -39,7 +127,6 @@ export function HomeSpeedTest() {
             await new Promise(resolve => setTimeout(resolve, 800));
 
             try {
-                // Primary: ipwho.is (Free, no key, generous limits)
                 const res = await fetch('https://ipwho.is/');
                 if (res.ok) {
                     const data = await res.json();
@@ -50,15 +137,12 @@ export function HomeSpeedTest() {
                             city: data.city,
                             country_name: data.country
                         });
-                        return; // Success, exit
+                        return;
                     }
                 }
-                // If primary fails logic (but not network), throw to catch
                 throw new Error('Primary API failed');
             } catch (e) {
-                // Silently fail primary and try fallback to avoid console error noise
                 try {
-                    // Fallback: ipify (IP only, very reliable)
                     const ipRes = await fetch('https://api.ipify.org?format=json');
                     if (ipRes.ok) {
                         const ipData = await ipRes.json();
@@ -100,10 +184,51 @@ export function HomeSpeedTest() {
         }
         jitter /= Math.max(1, valid.length - 1);
 
-        return {
-            latency_ms: avg,
-            jitter_ms: jitter,
-        };
+        return { latency_ms: avg, jitter_ms: jitter };
+    };
+
+    // Adaptive download test
+    const runSingleDownloadTest = async (sizeBytes: number, timeoutMs: number): Promise<number | null> => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            const t0 = performance.now();
+            const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${sizeBytes}&ts=${Date.now()}`, {
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            await response.blob();
+            const duration = (performance.now() - t0) / 1000;
+            clearTimeout(timeout);
+            return (sizeBytes * 8) / (duration * 1000 * 1000);
+        } catch {
+            clearTimeout(timeout);
+            return null;
+        }
+    };
+
+    // Adaptive upload test
+    const runSingleUploadTest = async (sizeBytes: number, timeoutMs: number): Promise<number | null> => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            const uploadData = new Uint8Array(sizeBytes).map(() => Math.floor(Math.random() * 256));
+            const t0 = performance.now();
+            await fetch('https://speed.cloudflare.com/__up', {
+                method: 'POST',
+                body: uploadData,
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            const duration = (performance.now() - t0) / 1000;
+            clearTimeout(timeout);
+            return (sizeBytes * 8) / (duration * 1000 * 1000);
+        } catch {
+            clearTimeout(timeout);
+            return null;
+        }
     };
 
     const runSpeedTest = async () => {
@@ -114,6 +239,7 @@ export function HomeSpeedTest() {
             latency: null,
             jitter: null,
         });
+        setClassifiedResults(null);
         setProgress(0);
 
         try {
@@ -125,42 +251,27 @@ export function HomeSpeedTest() {
                 latency: Math.round(latencyResult.latency_ms),
                 jitter: Math.round(latencyResult.jitter_ms * 10) / 10,
             }));
-            setProgress(30);
+            setProgress(20);
 
-            // 2. Download Speed Test
-            setCurrentTest('Testing download speed...');
-            const downloadSize = 10 * 1024 * 1024; // 10MB for faster test
-            try {
-                const t0 = performance.now();
-                const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${downloadSize}`, { cache: 'no-store' });
-                await response.blob();
-                const duration = (performance.now() - t0) / 1000;
-                const speed = (downloadSize * 8) / (duration * 1000 * 1000);
-                setSpeedResults(prev => ({ ...prev, downloadSpeed: speed }));
-            } catch (e) {
-                console.error('Download test failed', e);
-            }
-            setProgress(70);
+            // 2. Adaptive Download Test
+            setCurrentTest('Testing download...');
+            const downloadSpeed = await runSingleDownloadTest(ADAPTIVE_CONFIG.SIZES.MEDIUM, ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.MEDIUM);
+            setSpeedResults(prev => ({ ...prev, downloadSpeed: downloadSpeed }));
+            setProgress(60);
 
-            // 3. Upload Speed Test
-            setCurrentTest('Testing upload speed...');
-            const uploadSize = 5 * 1024 * 1024; // 5MB for faster test
-            try {
-                const uploadData = new Uint8Array(uploadSize).map(() => Math.floor(Math.random() * 256));
-                const t0 = performance.now();
-                await fetch('https://speed.cloudflare.com/__up', {
-                    method: 'POST',
-                    body: uploadData,
-                    cache: 'no-store',
-                });
-                const duration = (performance.now() - t0) / 1000;
-                const speed = (uploadSize * 8) / (duration * 1000 * 1000);
-                setSpeedResults(prev => ({ ...prev, uploadSpeed: speed }));
-            } catch (e) {
-                console.error('Upload test failed', e);
+            // 3. Adaptive Upload Test
+            setCurrentTest('Testing upload...');
+            const uploadSpeed = await runSingleUploadTest(ADAPTIVE_CONFIG.SIZES.SMALL, ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.SMALL);
+            setSpeedResults(prev => ({ ...prev, uploadSpeed: uploadSpeed }));
+            setProgress(90);
+
+            // 4. Classify results
+            if (downloadSpeed !== null && uploadSpeed !== null) {
+                const classified = classifyResults(downloadSpeed, uploadSpeed, Math.round(latencyResult.latency_ms));
+                setClassifiedResults(classified);
             }
+
             setProgress(100);
-
             setCurrentTest('Complete!');
         } catch (e) {
             console.error('Speed test error:', e);
@@ -187,28 +298,23 @@ export function HomeSpeedTest() {
 
             {scanning ? (
                 <div className="space-y-3 py-1">
-                    {/* Skeleton for IP */}
                     <div className="flex justify-center space-y-1">
                         <div className="h-5 w-32 bg-zinc-800 rounded animate-pulse"></div>
                     </div>
-                    {/* Skeleton for ISP */}
                     <div className="flex justify-center space-y-1">
                         <div className="h-4 w-24 bg-zinc-800 rounded animate-pulse"></div>
                     </div>
-                    {/* Skeleton for Location */}
                     <div className="flex justify-center space-y-1">
                         <div className="h-4 w-40 bg-zinc-800 rounded animate-pulse"></div>
                     </div>
                 </div>
             ) : ipInfo ? (
                 <div className="text-center space-y-2">
-                    {/* IP Address */}
                     <div>
                         <span className="text-xs font-semibold text-zinc-400 uppercase">IP: </span>
                         <span className="font-mono font-bold text-white break-all">{ipInfo.ip}</span>
                     </div>
 
-                    {/* Provider */}
                     {ipInfo.org && (
                         <div>
                             <span className="text-xs font-semibold text-zinc-400 uppercase">ISP: </span>
@@ -216,7 +322,6 @@ export function HomeSpeedTest() {
                         </div>
                     )}
 
-                    {/* Location */}
                     {ipInfo.city && ipInfo.country_name && (
                         <div>
                             <span className="text-xs font-semibold text-zinc-400 uppercase">Location: </span>
@@ -292,6 +397,33 @@ export function HomeSpeedTest() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Classification Results */}
+                            {classifiedResults && (
+                                <div className="grid grid-cols-3 gap-2 mt-3">
+                                    <div className="p-2 rounded bg-zinc-800/30 border border-zinc-700">
+                                        <div className="text-xs text-zinc-500 mb-1">📺 Streaming</div>
+                                        <div className={`text-xs px-1.5 py-0.5 rounded border ${getLabelColor(classifiedResults.streaming.label)} inline-block`}>
+                                            {classifiedResults.streaming.label}
+                                        </div>
+                                        <div className="text-xs text-zinc-400 mt-1">{classifiedResults.streaming.recommended}</div>
+                                    </div>
+                                    <div className="p-2 rounded bg-zinc-800/30 border border-zinc-700">
+                                        <div className="text-xs text-zinc-500 mb-1">🎮 Gaming</div>
+                                        <div className={`text-xs px-1.5 py-0.5 rounded border ${getLabelColor(classifiedResults.gaming.label)} inline-block`}>
+                                            {classifiedResults.gaming.label}
+                                        </div>
+                                        <div className="text-xs text-zinc-400 mt-1">{classifiedResults.gaming.recommended}</div>
+                                    </div>
+                                    <div className="p-2 rounded bg-zinc-800/30 border border-zinc-700">
+                                        <div className="text-xs text-zinc-500 mb-1">📞 Calls</div>
+                                        <div className={`text-xs px-1.5 py-0.5 rounded border ${getLabelColor(classifiedResults.video_calls.label)} inline-block`}>
+                                            {classifiedResults.video_calls.label}
+                                        </div>
+                                        <div className="text-xs text-zinc-400 mt-1">{classifiedResults.video_calls.recommended}</div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Test Again Button */}
                             <button
