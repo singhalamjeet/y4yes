@@ -2,12 +2,53 @@
 
 import { useState, useEffect } from 'react';
 
+// Adaptive Speed Test Configuration
+const ADAPTIVE_CONFIG = {
+    // File sizes in bytes
+    SIZES: {
+        SMALL: 1 * 1024 * 1024,   // 1MB
+        MEDIUM: 10 * 1024 * 1024,  // 10MB
+        LARGE: 25 * 1024 * 1024    // 25MB
+    },
+
+    // Timing thresholds (seconds) - if exceeded, don't escalate
+    FAST_THRESHOLD_SEC: {
+        SMALL: 2.0,   // 1MB should complete in ~2s on good network
+        MEDIUM: 6.0,  // 10MB should complete in ~6s on good network
+        LARGE: 15.0   // 25MB should complete in ~15s on good network
+    },
+
+    // Hard timeouts (milliseconds) - abort if exceeded
+    MAX_TIMEOUT_MS: {
+        SMALL: 10000,   // 10s timeout for 1MB
+        MEDIUM: 20000,  // 20s timeout for 10MB
+        LARGE: 45000    // 45s timeout for 25MB
+    },
+
+    // Repetitions and validation
+    REPS_PER_SIZE: 3,
+    MIN_SUCCESS_REPS: 2,  // At least 2 of 3 must succeed
+    SLOW_ABORT_FACTOR: 2.5 // If any rep takes >2.5x threshold, treat as slow
+};
+
 interface LocationInfo {
     ip: string;
     city: string;
     region: string;
     country: string;
     isp: string;
+}
+
+interface SizeTestResult {
+    size_mb: number;
+    rep_speeds_mbps: (number | null)[];
+    rep_times_sec: (number | null)[];
+    success_count: number;
+    timeout_count: number;
+    avg_mbps: number | null;
+    avg_time_sec: number | null;
+    escalated_to_next: boolean;
+    stop_reason?: string;
 }
 
 export default function SpeedTestClient() {
@@ -22,6 +63,12 @@ export default function SpeedTestClient() {
     const [idleLatency, setIdleLatency] = useState<number | null>(null);
     const [idleJitter, setIdleJitter] = useState<number | null>(null);
     const [packetLoss, setPacketLoss] = useState<number | null>(null);
+
+    // Adaptive test results
+    const [downloadTests, setDownloadTests] = useState<SizeTestResult[]>([]);
+    const [uploadTests, setUploadTests] = useState<SizeTestResult[]>([]);
+    const [downloadBasisMb, setDownloadBasisMb] = useState<number | null>(null);
+    const [uploadBasisMb, setUploadBasisMb] = useState<number | null>(null);
 
     useEffect(() => {
         fetchLocationInfo();
@@ -45,7 +92,7 @@ export default function SpeedTestClient() {
         }
     };
 
-    // User-provided latency test logic
+    // Latency test
     const measureLatency = async (samples = 10) => {
         const url = "https://speed.cloudflare.com/__down?bytes=1";
         const times = [];
@@ -78,6 +125,266 @@ export default function SpeedTestClient() {
         };
     };
 
+    // Single download test with timeout
+    const runSingleDownloadTest = async (
+        sizeBytes: number,
+        timeoutMs: number
+    ): Promise<{ speed_mbps: number; time_sec: number } | null> => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            const cacheBuster = Date.now() + Math.random();
+            const url = `https://speed.cloudflare.com/__down?bytes=${sizeBytes}&cb=${cacheBuster}`;
+
+            const t0 = performance.now();
+            const response = await fetch(url, {
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            await response.blob();
+            const duration = (performance.now() - t0) / 1000;
+
+            clearTimeout(timeoutId);
+
+            const speed = (sizeBytes * 8) / (duration * 1000 * 1000);
+            return { speed_mbps: speed, time_sec: duration };
+        } catch (error) {
+            clearTimeout(timeoutId);
+            return null; // Timeout or failure
+        }
+    };
+
+    // Single upload test with timeout
+    const runSingleUploadTest = async (
+        sizeBytes: number,
+        timeoutMs: number
+    ): Promise<{ speed_mbps: number; time_sec: number } | null> => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            // Generate random payload
+            const uploadData = new Uint8Array(sizeBytes)
+                .map(() => Math.floor(Math.random() * 256));
+
+            const t0 = performance.now();
+            await fetch('https://speed.cloudflare.com/__up', {
+                method: 'POST',
+                body: uploadData,
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            const duration = (performance.now() - t0) / 1000;
+
+            clearTimeout(timeoutId);
+
+            const speed = (sizeBytes * 8) / (duration * 1000 * 1000);
+            return { speed_mbps: speed, time_sec: duration };
+        } catch (error) {
+            clearTimeout(timeoutId);
+            return null;
+        }
+    };
+
+    // Decision logic for escalation
+    const shouldEscalate = (
+        sizeMb: number,
+        repTimes: (number | null)[],
+        successCount: number,
+        timeoutCount: number,
+        thresholdSec: number
+    ): { escalate: boolean; reason?: string } => {
+        // Need minimum successful reps
+        if (successCount < ADAPTIVE_CONFIG.MIN_SUCCESS_REPS) {
+            return {
+                escalate: false,
+                reason: `Only ${successCount}/${ADAPTIVE_CONFIG.REPS_PER_SIZE} successful reps`
+            };
+        }
+
+        // Too many timeouts
+        if (timeoutCount >= 2) {
+            return {
+                escalate: false,
+                reason: `${timeoutCount} timeouts detected`
+            };
+        }
+
+        // Check average time
+        const validTimes = repTimes.filter(t => t !== null) as number[];
+        const avgTime = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+
+        if (avgTime > thresholdSec) {
+            return {
+                escalate: false,
+                reason: `Avg time ${avgTime.toFixed(1)}s exceeds ${thresholdSec}s threshold`
+            };
+        }
+
+        // Check if any single rep was too slow (erratic network)
+        const maxTime = Math.max(...validTimes);
+        if (maxTime > thresholdSec * ADAPTIVE_CONFIG.SLOW_ABORT_FACTOR) {
+            return {
+                escalate: false,
+                reason: `Slowest rep ${maxTime.toFixed(1)}s indicates unstable connection`
+            };
+        }
+
+        return { escalate: true };
+    };
+
+    // Adaptive download test
+    const runAdaptiveDownloadTest = async (
+        onProgress: (message: string, percent: number) => void
+    ): Promise<SizeTestResult[]> => {
+        const results: SizeTestResult[] = [];
+        const sizes = [
+            { bytes: ADAPTIVE_CONFIG.SIZES.SMALL, mb: 1, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.SMALL, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.SMALL },
+            { bytes: ADAPTIVE_CONFIG.SIZES.MEDIUM, mb: 10, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.MEDIUM, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.MEDIUM },
+            { bytes: ADAPTIVE_CONFIG.SIZES.LARGE, mb: 25, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.LARGE, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.LARGE }
+        ];
+
+        for (let i = 0; i < sizes.length; i++) {
+            const { bytes, mb, timeout, threshold } = sizes[i];
+            onProgress(`Testing download ${mb}MB (${i + 1}/3)...`, 30 + (i * 15));
+
+            const repSpeeds: (number | null)[] = [];
+            const repTimes: (number | null)[] = [];
+            let successCount = 0;
+            let timeoutCount = 0;
+
+            // Run 3 reps for this size
+            for (let rep = 0; rep < ADAPTIVE_CONFIG.REPS_PER_SIZE; rep++) {
+                const result = await runSingleDownloadTest(bytes, timeout);
+
+                if (result) {
+                    repSpeeds.push(result.speed_mbps);
+                    repTimes.push(result.time_sec);
+                    successCount++;
+                } else {
+                    repSpeeds.push(null);
+                    repTimes.push(null);
+                    timeoutCount++;
+                }
+            }
+
+            // Calculate averages from successful reps
+            const validSpeeds = repSpeeds.filter(s => s !== null) as number[];
+            const validTimes = repTimes.filter(t => t !== null) as number[];
+
+            const avgSpeed = validSpeeds.length > 0
+                ? validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length
+                : null;
+            const avgTime = validTimes.length > 0
+                ? validTimes.reduce((a, b) => a + b, 0) / validTimes.length
+                : null;
+
+            // Decide if we should escalate
+            const escalation = shouldEscalate(mb, repTimes, successCount, timeoutCount, threshold);
+
+            results.push({
+                size_mb: mb,
+                rep_speeds_mbps: repSpeeds,
+                rep_times_sec: repTimes,
+                success_count: successCount,
+                timeout_count: timeoutCount,
+                avg_mbps: avgSpeed,
+                avg_time_sec: avgTime,
+                escalated_to_next: escalation.escalate,
+                stop_reason: escalation.reason
+            });
+
+            // Stop if we shouldn't escalate
+            if (!escalation.escalate) {
+                break;
+            }
+        }
+
+        return results;
+    };
+
+    // Adaptive upload test
+    const runAdaptiveUploadTest = async (
+        onProgress: (message: string, percent: number) => void
+    ): Promise<SizeTestResult[]> => {
+        const results: SizeTestResult[] = [];
+        const sizes = [
+            { bytes: ADAPTIVE_CONFIG.SIZES.SMALL, mb: 1, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.SMALL, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.SMALL },
+            { bytes: ADAPTIVE_CONFIG.SIZES.MEDIUM, mb: 10, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.MEDIUM, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.MEDIUM },
+            { bytes: ADAPTIVE_CONFIG.SIZES.LARGE, mb: 25, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.LARGE, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.LARGE }
+        ];
+
+        for (let i = 0; i < sizes.length; i++) {
+            const { bytes, mb, timeout, threshold } = sizes[i];
+            onProgress(`Testing upload ${mb}MB (${i + 1}/3)...`, 75 + (i * 7));
+
+            const repSpeeds: (number | null)[] = [];
+            const repTimes: (number | null)[] = [];
+            let successCount = 0;
+            let timeoutCount = 0;
+
+            // Run 3 reps for this size
+            for (let rep = 0; rep < ADAPTIVE_CONFIG.REPS_PER_SIZE; rep++) {
+                const result = await runSingleUploadTest(bytes, timeout);
+
+                if (result) {
+                    repSpeeds.push(result.speed_mbps);
+                    repTimes.push(result.time_sec);
+                    successCount++;
+                } else {
+                    repSpeeds.push(null);
+                    repTimes.push(null);
+                    timeoutCount++;
+                }
+            }
+
+            // Calculate averages from successful reps
+            const validSpeeds = repSpeeds.filter(s => s !== null) as number[];
+            const validTimes = repTimes.filter(t => t !== null) as number[];
+
+            const avgSpeed = validSpeeds.length > 0
+                ? validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length
+                : null;
+            const avgTime = validTimes.length > 0
+                ? validTimes.reduce((a, b) => a + b, 0) / validTimes.length
+                : null;
+
+            // Decide if we should escalate
+            const escalation = shouldEscalate(mb, repTimes, successCount, timeoutCount, threshold);
+
+            results.push({
+                size_mb: mb,
+                rep_speeds_mbps: repSpeeds,
+                rep_times_sec: repTimes,
+                success_count: successCount,
+                timeout_count: timeoutCount,
+                avg_mbps: avgSpeed,
+                avg_time_sec: avgTime,
+                escalated_to_next: escalation.escalate,
+                stop_reason: escalation.reason
+            });
+
+            // Stop if we shouldn't escalate
+            if (!escalation.escalate) {
+                break;
+            }
+        }
+
+        return results;
+    };
+
+    // Get final speed from adaptive results
+    const getFinalSpeed = (tests: SizeTestResult[]): { speed: number | null; basisMb: number | null } => {
+        // Use the last successful test with valid average
+        for (let i = tests.length - 1; i >= 0; i--) {
+            if (tests[i].avg_mbps !== null && tests[i].success_count >= ADAPTIVE_CONFIG.MIN_SUCCESS_REPS) {
+                return { speed: tests[i].avg_mbps, basisMb: tests[i].size_mb };
+            }
+        }
+        return { speed: null, basisMb: null };
+    };
+
     const runTest = async () => {
         setTesting(true);
         setDownloadSpeed(null);
@@ -85,110 +392,50 @@ export default function SpeedTestClient() {
         setIdleLatency(null);
         setIdleJitter(null);
         setPacketLoss(null);
+        setDownloadTests([]);
+        setUploadTests([]);
         setProgress(0);
 
         try {
             // 1. Latency & Jitter Test
             setCurrentTest('Testing latency...');
+            const latencyResult = await measureLatency(10);
 
-            // Run latency test twice and average as requested
-            const latencyRun1 = await measureLatency(10);
-            setProgress(10);
-            const latencyRun2 = await measureLatency(10);
+            setIdleLatency(Math.round(latencyResult.latency_ms));
+            setIdleJitter(Math.round(latencyResult.jitter_ms * 10) / 10);
+            setPacketLoss(latencyResult.packet_loss);
             setProgress(20);
 
-            const avgLatency = (latencyRun1.latency_ms + latencyRun2.latency_ms) / 2;
-            const avgJitter = (latencyRun1.jitter_ms + latencyRun2.jitter_ms) / 2;
-            const avgPacketLoss = (latencyRun1.packet_loss + latencyRun2.packet_loss) / 2;
+            // 2. Adaptive Download Test
+            const downloadResults = await runAdaptiveDownloadTest(
+                (msg, pct) => {
+                    setCurrentTest(msg);
+                    setProgress(pct);
+                }
+            );
 
-            setIdleLatency(Math.round(avgLatency));
-            setIdleJitter(Math.round(avgJitter * 10) / 10);
-            setPacketLoss(avgPacketLoss);
+            setDownloadTests(downloadResults);
 
-            // 2. Download Speed Test (Run twice and average)
-            setCurrentTest('Testing download speed...');
-            const downloadSize = 25 * 1024 * 1024; // 25MB
-            const downloadSpeeds: number[] = [];
+            // 3. Adaptive Upload Test
+            const uploadResults = await runAdaptiveUploadTest(
+                (msg, pct) => {
+                    setCurrentTest(msg);
+                    setProgress(pct);
+                }
+            );
 
-            // Pass 1
-            try {
-                const t0 = performance.now();
-                const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${downloadSize}`, { cache: 'no-store' });
-                await response.blob();
-                const duration = (performance.now() - t0) / 1000;
-                const speed = (downloadSize * 8) / (duration * 1000 * 1000);
-                downloadSpeeds.push(speed);
-                setDownloadSpeed(speed);
-            } catch (e) {
-                console.error('Download pass 1 failed', e);
-            }
-            setProgress(50);
+            setUploadTests(uploadResults);
 
-            // Pass 2
-            try {
-                const t0 = performance.now();
-                const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${downloadSize}`, { cache: 'no-store' });
-                await response.blob();
-                const duration = (performance.now() - t0) / 1000;
-                const speed = (downloadSize * 8) / (duration * 1000 * 1000);
-                downloadSpeeds.push(speed);
-                setDownloadSpeed(speed);
-            } catch (e) {
-                console.error('Download pass 2 failed', e);
-            }
-            setProgress(80);
+            // 4. Get final speeds
+            const finalDownload = getFinalSpeed(downloadResults);
+            const finalUpload = getFinalSpeed(uploadResults);
 
-            if (downloadSpeeds.length > 0) {
-                const avgDownload = downloadSpeeds.reduce((a, b) => a + b, 0) / downloadSpeeds.length;
-                setDownloadSpeed(avgDownload);
-            }
+            setDownloadSpeed(finalDownload.speed);
+            setUploadSpeed(finalUpload.speed);
+            setDownloadBasisMb(finalDownload.basisMb);
+            setUploadBasisMb(finalUpload.basisMb);
 
-            // 3. Upload Speed Test (Run twice and average)
-            setCurrentTest('Testing upload speed...');
-            const uploadSize = 10 * 1024 * 1024; // 10MB
-            const uploadSpeeds: number[] = [];
-
-            // Pass 1
-            try {
-                const uploadData = new Uint8Array(uploadSize).map(() => Math.floor(Math.random() * 256));
-                const t0 = performance.now();
-                await fetch('https://speed.cloudflare.com/__up', {
-                    method: 'POST',
-                    body: uploadData,
-                    cache: 'no-store',
-                });
-                const duration = (performance.now() - t0) / 1000;
-                const speed = (uploadSize * 8) / (duration * 1000 * 1000);
-                uploadSpeeds.push(speed);
-                setUploadSpeed(speed);
-            } catch (e) {
-                console.error('Upload pass 1 failed', e);
-            }
-            setProgress(90);
-
-            // Pass 2
-            try {
-                const uploadData = new Uint8Array(uploadSize).map(() => Math.floor(Math.random() * 256));
-                const t0 = performance.now();
-                await fetch('https://speed.cloudflare.com/__up', {
-                    method: 'POST',
-                    body: uploadData,
-                    cache: 'no-store',
-                });
-                const duration = (performance.now() - t0) / 1000;
-                const speed = (uploadSize * 8) / (duration * 1000 * 1000);
-                uploadSpeeds.push(speed);
-                setUploadSpeed(speed);
-            } catch (e) {
-                console.error('Upload pass 2 failed', e);
-            }
             setProgress(100);
-
-            if (uploadSpeeds.length > 0) {
-                const avgUpload = uploadSpeeds.reduce((a, b) => a + b, 0) / uploadSpeeds.length;
-                setUploadSpeed(avgUpload);
-            }
-
             setCurrentTest('Complete!');
         } catch (e) {
             console.error('Speed test error:', e);
@@ -296,7 +543,10 @@ export default function SpeedTestClient() {
                                     <div className={`text-7xl font-bold mb-2 ${getSpeedColor(downloadSpeed)}`}>
                                         {downloadSpeed?.toFixed(0)}
                                     </div>
-                                    <div className="text-lg text-zinc-500 mb-6">Mbps</div>
+                                    <div className="text-lg text-zinc-500 mb-2">Mbps</div>
+                                    {downloadBasisMb && (
+                                        <div className="text-xs text-zinc-600 mb-4">Based on {downloadBasisMb}MB test</div>
+                                    )}
                                     <button
                                         onClick={runTest}
                                         className="px-6 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors shadow-lg shadow-blue-500/20"
@@ -327,21 +577,25 @@ export default function SpeedTestClient() {
                     <div className={`text-4xl font-bold mb-1 ${getSpeedColor(downloadSpeed)}`}>
                         {downloadSpeed !== null ? downloadSpeed.toFixed(1) : '—'}
                     </div>
-                    <div className="text-sm text-zinc-500">Mbps</div>
+                    <div className="text-sm text-zinc-500">
+                        {downloadBasisMb ? `Mbps (${downloadBasisMb}MB)` : 'Mbps'}
+                    </div>
                 </div>
                 <div className="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800 text-center">
                     <div className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Upload</div>
                     <div className={`text-4xl font-bold mb-1 ${getSpeedColor(uploadSpeed)}`}>
                         {uploadSpeed !== null ? uploadSpeed.toFixed(1) : '—'}
                     </div>
-                    <div className="text-sm text-zinc-500">Mbps</div>
+                    <div className="text-sm text-zinc-500">
+                        {uploadBasisMb ? `Mbps (${uploadBasisMb}MB)` : 'Mbps'}
+                    </div>
                 </div>
             </div>
 
             {downloadSpeed && (
                 <>
                     {/* Detailed Metrics Table */}
-                    <div className="p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800">
+                    <div className="p-8 rounded-2xl bg-zinc-900/30 border border-zinc-800 space-y-6">
                         <h3 className="text-xl font-bold text-white mb-6">Detailed Metrics</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="p-4 bg-zinc-800/50 rounded-lg">
@@ -361,6 +615,59 @@ export default function SpeedTestClient() {
                                 <div className="text-lg font-bold text-blue-400">Cloudflare</div>
                             </div>
                         </div>
+
+                        {/* Adaptive Test Breakdown */}
+                        {downloadTests.length > 0 && (
+                            <div className="space-y-4">
+                                <h4 className="text-lg font-semibold text-white">Download Test Results</h4>
+                                {downloadTests.map((test, idx) => (
+                                    <div key={idx} className="p-4 bg-zinc-800/30 rounded-lg">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-semibold text-white">{test.size_mb}MB Test</span>
+                                            <span className="text-xs text-zinc-400">
+                                                {test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE} successful
+                                            </span>
+                                        </div>
+                                        {test.avg_mbps !== null && (
+                                            <div className="text-lg font-bold text-blue-400 mb-1">
+                                                {test.avg_mbps.toFixed(1)} Mbps avg
+                                            </div>
+                                        )}
+                                        {test.stop_reason && (
+                                            <div className="text-xs text-yellow-400">
+                                                ⚠ {test.stop_reason}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {uploadTests.length > 0 && (
+                            <div className="space-y-4">
+                                <h4 className="text-lg font-semibold text-white">Upload Test Results</h4>
+                                {uploadTests.map((test, idx) => (
+                                    <div key={idx} className="p-4 bg-zinc-800/30 rounded-lg">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-semibold text-white">{test.size_mb}MB Test</span>
+                                            <span className="text-xs text-zinc-400">
+                                                {test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE} successful
+                                            </span>
+                                        </div>
+                                        {test.avg_mbps !== null && (
+                                            <div className="text-lg font-bold text-purple-400 mb-1">
+                                                {test.avg_mbps.toFixed(1)} Mbps avg
+                                            </div>
+                                        )}
+                                        {test.stop_reason && (
+                                            <div className="text-xs text-yellow-400">
+                                                ⚠ {test.stop_reason}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Network Quality Indicators */}
@@ -390,7 +697,7 @@ export default function SpeedTestClient() {
             )}
 
             <div className="text-center text-sm text-zinc-500">
-                <p>Server: Cloudflare • Results may vary based on network conditions</p>
+                <p>Server: Cloudflare • Adaptive testing for optimal speed on all networks</p>
             </div>
 
             {/* Informational Section */}
@@ -400,6 +707,27 @@ export default function SpeedTestClient() {
                     <p className="text-zinc-300 leading-relaxed">
                         Internet Speed Test measures your current internet connection's download and upload speeds, plus network latency (ping). It tests your bandwidth by transferring data between your device and Cloudflare servers, providing accurate measurements of your real-world internet performance.
                     </p>
+                </div>
+
+                <div>
+                    <h3 className="text-xl font-semibold text-white mb-3">Adaptive Testing Technology</h3>
+                    <p className="text-zinc-300 leading-relaxed mb-3">
+                        Our adaptive speed test intelligently adjusts to your network conditions. It starts with small 1MB tests and only progresses to larger 10MB and 25MB tests if your connection is fast enough. This means:
+                    </p>
+                    <ul className="space-y-2 text-zinc-300">
+                        <li className="flex items-start gap-2">
+                            <span className="text-green-400 mt-1">✓</span>
+                            <span><strong className="text-white">Fast networks</strong> get comprehensive 25MB tests for maximum accuracy</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-green-400 mt-1">✓</span>
+                            <span><strong className="text-white">Slow networks</strong> complete quickly without wasting time on large transfers</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-green-400 mt-1">✓</span>
+                            <span><strong className="text-white">All results</strong> are based on the optimal file size for your connection</span>
+                        </li>
+                    </ul>
                 </div>
 
                 <div>
