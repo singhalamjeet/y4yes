@@ -301,7 +301,7 @@ function calculateOverall(
     const labelScores = labels.map(l =>
         l === 'EXCELLENT' ? 4 : l === 'GOOD' ? 3 : l === 'BAD' ? 2 : 1
     );
-    const avgLabelScore = labelScores.reduce((a, b) => a + b) / 3;
+    const avgLabelScore = labelScores.reduce((a: number, b) => a + b, 0) / 3;
 
     const overallLabel: RatingLabel =
         avgLabelScore >= 3.5 ? 'EXCELLENT' :
