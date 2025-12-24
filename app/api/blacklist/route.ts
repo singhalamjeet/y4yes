@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dns from 'dns';
 import { promisify } from 'util';
+import psl from 'psl';
 
 // We need to use the raw resolve4 to get TTL, but promisify it carefully or just wrap it
 const resolve4 = promisify(dns.resolve4);
@@ -61,15 +62,39 @@ function reverseIp(ip: string): string {
     return ip.split('.').reverse().join('.');
 }
 
-async function checkBlacklist(target: string, blacklist: BlacklistDef) {
+function extractRootDomain(domain: string): string {
+    // Remove any protocol prefix
+    let cleanDomain = domain.replace(/^https?:\/\//, '');
+
+    // Remove any path, query string, or fragment
+    cleanDomain = cleanDomain.split('/')[0].split('?')[0].split('#')[0];
+
+    // Remove port if present
+    cleanDomain = cleanDomain.split(':')[0];
+
+    // Use psl to parse the domain
+    const parsed = psl.parse(cleanDomain);
+
+    // If parsing succeeded and we have a domain, return it
+    // Otherwise fall back to the cleaned domain
+    if (parsed && typeof parsed === 'object' && 'domain' in parsed && parsed.domain) {
+        return parsed.domain;
+    }
+
+    // Fallback: return the cleaned domain
+    return cleanDomain;
+}
+
+async function checkBlacklist(target: string, blacklist: BlacklistDef, originalDomain?: string) {
     let query = '';
 
     if (blacklist.type === 'ip') {
         const reversedIp = reverseIp(target);
         query = `${reversedIp}.${blacklist.host}`;
     } else {
-        // For domain blacklists, we query domain.host
-        query = `${target}.${blacklist.host}`;
+        // For domain blacklists, extract root domain to handle multi-part TLDs
+        const rootDomain = originalDomain ? extractRootDomain(originalDomain) : target;
+        query = `${rootDomain}.${blacklist.host}`;
     }
 
     const startTime = Date.now();
@@ -147,7 +172,7 @@ export async function GET(request: Request) {
         const results = await Promise.all(
             blacklists.map(bl => {
                 const target = bl.type === 'ip' ? ip : domain;
-                return checkBlacklist(target, bl);
+                return checkBlacklist(target, bl, domain);
             })
         );
 
