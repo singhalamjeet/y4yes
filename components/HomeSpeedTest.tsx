@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 
-// Adaptive Speed Test Configuration
+// Adaptive Speed Test Configuration (same as main speed test)
 const ADAPTIVE_CONFIG = {
     SIZES: {
-        SMALL: 1 * 1024 * 1024,   // 1MB
-        MEDIUM: 10 * 1024 * 1024,  // 10MB
-        LARGE: 25 * 1024 * 1024    // 25MB
+        SMALL: 1 * 1024 * 1024,
+        MEDIUM: 10 * 1024 * 1024,
+        LARGE: 25 * 1024 * 1024
     },
     FAST_THRESHOLD_SEC: {
         SMALL: 2.0,
@@ -35,6 +35,18 @@ interface IPInfo {
     asn?: string;
 }
 
+interface SizeTestResult {
+    size_mb: number;
+    rep_speeds_mbps: (number | null)[];
+    rep_times_sec: (number | null)[];
+    success_count: number;
+    timeout_count: number;
+    avg_mbps: number | null;
+    avg_time_sec: number | null;
+    escalated_to_next: boolean;
+    stop_reason?: string;
+}
+
 interface SpeedTestResults {
     downloadSpeed: number | null;
     uploadSpeed: number | null;
@@ -42,7 +54,6 @@ interface SpeedTestResults {
     jitter: number | null;
 }
 
-// Classification Types
 type RatingLabel = 'POOR' | 'BAD' | 'GOOD' | 'EXCELLENT';
 
 interface UseCaseRating {
@@ -56,9 +67,7 @@ interface ClassifiedResults {
     video_calls: UseCaseRating;
 }
 
-// Classification Functions
 function classifyResults(download_mbps: number, upload_mbps: number, latency_ms: number): ClassifiedResults {
-    // Streaming classification (download-focused)
     let streaming: UseCaseRating;
     if (download_mbps < 3) {
         streaming = { label: 'POOR', recommended: 'SD may struggle' };
@@ -70,7 +79,6 @@ function classifyResults(download_mbps: number, upload_mbps: number, latency_ms:
         streaming = { label: 'EXCELLENT', recommended: '4K' };
     }
 
-    // Gaming classification (latency-focused)
     let gaming: UseCaseRating;
     const bandwidthTooLow = download_mbps < 3 || upload_mbps < 1;
     if (latency_ms > 150 || bandwidthTooLow) {
@@ -83,7 +91,6 @@ function classifyResults(download_mbps: number, upload_mbps: number, latency_ms:
         gaming = { label: 'EXCELLENT', recommended: 'Competitive' };
     }
 
-    // Video calls classification (upload + latency)
     let video_calls: UseCaseRating;
     if (upload_mbps < 1 || latency_ms > 300) {
         video_calls = { label: 'POOR', recommended: 'Audio-only' };
@@ -174,7 +181,7 @@ export function HomeSpeedTest() {
         }
 
         const valid = times.filter((t): t is number => t !== null);
-        if (valid.length === 0) return { latency_ms: 0, jitter_ms: 0 };
+        if (valid.length === 0) return { latency_ms: 0, jitter_ms: 0, packet_loss: 0 };
 
         const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
 
@@ -184,37 +191,52 @@ export function HomeSpeedTest() {
         }
         jitter /= Math.max(1, valid.length - 1);
 
-        return { latency_ms: avg, jitter_ms: jitter };
+        const packetLoss = ((samples - valid.length) / samples) * 100;
+
+        return { latency_ms: avg, jitter_ms: jitter, packet_loss: packetLoss };
     };
 
-    // Adaptive download test
-    const runSingleDownloadTest = async (sizeBytes: number, timeoutMs: number): Promise<number | null> => {
+    // EXACT SAME ADAPTIVE FUNCTIONS AS MAIN SPEED TEST
+    const runSingleDownloadTest = async (
+        sizeBytes: number,
+        timeoutMs: number
+    ): Promise<{ speed_mbps: number; time_sec: number } | null> => {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
+            const cacheBuster = Date.now() + Math.random();
+            const url = `https://speed.cloudflare.com/__down?bytes=${sizeBytes}&cb=${cacheBuster}`;
+
             const t0 = performance.now();
-            const response = await fetch(`https://speed.cloudflare.com/__down?bytes=${sizeBytes}&ts=${Date.now()}`, {
+            const response = await fetch(url, {
                 cache: 'no-store',
                 signal: controller.signal
             });
             await response.blob();
             const duration = (performance.now() - t0) / 1000;
-            clearTimeout(timeout);
-            return (sizeBytes * 8) / (duration * 1000 * 1000);
-        } catch {
-            clearTimeout(timeout);
+
+            clearTimeout(timeoutId);
+
+            const speed = (sizeBytes * 8) / (duration * 1000 * 1000);
+            return { speed_mbps: speed, time_sec: duration };
+        } catch (error) {
+            clearTimeout(timeoutId);
             return null;
         }
     };
 
-    // Adaptive upload test
-    const runSingleUploadTest = async (sizeBytes: number, timeoutMs: number): Promise<number | null> => {
+    const runSingleUploadTest = async (
+        sizeBytes: number,
+        timeoutMs: number
+    ): Promise<{ speed_mbps: number; time_sec: number } | null> => {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
-            const uploadData = new Uint8Array(sizeBytes).map(() => Math.floor(Math.random() * 256));
+            const uploadData = new Uint8Array(sizeBytes)
+                .map(() => Math.floor(Math.random() * 256));
+
             const t0 = performance.now();
             await fetch('https://speed.cloudflare.com/__up', {
                 method: 'POST',
@@ -223,12 +245,196 @@ export function HomeSpeedTest() {
                 signal: controller.signal
             });
             const duration = (performance.now() - t0) / 1000;
-            clearTimeout(timeout);
-            return (sizeBytes * 8) / (duration * 1000 * 1000);
-        } catch {
-            clearTimeout(timeout);
+
+            clearTimeout(timeoutId);
+
+            const speed = (sizeBytes * 8) / (duration * 1000 * 1000);
+            return { speed_mbps: speed, time_sec: duration };
+        } catch (error) {
+            clearTimeout(timeoutId);
             return null;
         }
+    };
+
+    const shouldEscalate = (
+        sizeMb: number,
+        repTimes: (number | null)[],
+        successCount: number,
+        timeoutCount: number,
+        thresholdSec: number
+    ): { escalate: boolean; reason?: string } => {
+        if (successCount < ADAPTIVE_CONFIG.MIN_SUCCESS_REPS) {
+            return {
+                escalate: false,
+                reason: `Only ${successCount}/${ADAPTIVE_CONFIG.REPS_PER_SIZE} successful reps`
+            };
+        }
+
+        if (timeoutCount >= 2) {
+            return {
+                escalate: false,
+                reason: `${timeoutCount} timeouts detected`
+            };
+        }
+
+        const validTimes = repTimes.filter(t => t !== null) as number[];
+        const avgTime = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+
+        if (avgTime > thresholdSec) {
+            return {
+                escalate: false,
+                reason: `Avg time ${avgTime.toFixed(1)}s exceeds ${thresholdSec}s threshold`
+            };
+        }
+
+        const maxTime = Math.max(...validTimes);
+        if (maxTime > thresholdSec * ADAPTIVE_CONFIG.SLOW_ABORT_FACTOR) {
+            return {
+                escalate: false,
+                reason: `Slowest rep ${maxTime.toFixed(1)}s indicates unstable connection`
+            };
+        }
+
+        return { escalate: true };
+    };
+
+    const runAdaptiveDownloadTest = async (
+        onProgress: (message: string, percent: number) => void
+    ): Promise<SizeTestResult[]> => {
+        const results: SizeTestResult[] = [];
+        const sizes = [
+            { bytes: ADAPTIVE_CONFIG.SIZES.SMALL, mb: 1, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.SMALL, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.SMALL },
+            { bytes: ADAPTIVE_CONFIG.SIZES.MEDIUM, mb: 10, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.MEDIUM, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.MEDIUM },
+            { bytes: ADAPTIVE_CONFIG.SIZES.LARGE, mb: 25, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.LARGE, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.LARGE }
+        ];
+
+        for (let i = 0; i < sizes.length; i++) {
+            const { bytes, mb, timeout, threshold } = sizes[i];
+            onProgress(`Testing download ${mb}MB...`, 30 + (i * 15));
+
+            const repSpeeds: (number | null)[] = [];
+            const repTimes: (number | null)[] = [];
+            let successCount = 0;
+            let timeoutCount = 0;
+
+            for (let rep = 0; rep < ADAPTIVE_CONFIG.REPS_PER_SIZE; rep++) {
+                const result = await runSingleDownloadTest(bytes, timeout);
+
+                if (result) {
+                    repSpeeds.push(result.speed_mbps);
+                    repTimes.push(result.time_sec);
+                    successCount++;
+                } else {
+                    repSpeeds.push(null);
+                    repTimes.push(null);
+                    timeoutCount++;
+                }
+            }
+
+            const validSpeeds = repSpeeds.filter(s => s !== null) as number[];
+            const validTimes = repTimes.filter(t => t !== null) as number[];
+
+            const avgSpeed = validSpeeds.length > 0
+                ? validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length
+                : null;
+            const avgTime = validTimes.length > 0
+                ? validTimes.reduce((a, b) => a + b, 0) / validTimes.length
+                : null;
+
+            const escalation = shouldEscalate(mb, repTimes, successCount, timeoutCount, threshold);
+
+            results.push({
+                size_mb: mb,
+                rep_speeds_mbps: repSpeeds,
+                rep_times_sec: repTimes,
+                success_count: successCount,
+                timeout_count: timeoutCount,
+                avg_mbps: avgSpeed,
+                avg_time_sec: avgTime,
+                escalated_to_next: escalation.escalate,
+                stop_reason: escalation.reason
+            });
+
+            if (!escalation.escalate) {
+                break;
+            }
+        }
+
+        return results;
+    };
+
+    const runAdaptiveUploadTest = async (
+        onProgress: (message: string, percent: number) => void
+    ): Promise<SizeTestResult[]> => {
+        const results: SizeTestResult[] = [];
+        const sizes = [
+            { bytes: ADAPTIVE_CONFIG.SIZES.SMALL, mb: 1, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.SMALL, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.SMALL },
+            { bytes: ADAPTIVE_CONFIG.SIZES.MEDIUM, mb: 10, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.MEDIUM, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.MEDIUM },
+            { bytes: ADAPTIVE_CONFIG.SIZES.LARGE, mb: 25, timeout: ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.LARGE, threshold: ADAPTIVE_CONFIG.FAST_THRESHOLD_SEC.LARGE }
+        ];
+
+        for (let i = 0; i < sizes.length; i++) {
+            const { bytes, mb, timeout, threshold } = sizes[i];
+            onProgress(`Testing upload ${mb}MB...`, 75 + (i * 7));
+
+            const repSpeeds: (number | null)[] = [];
+            const repTimes: (number | null)[] = [];
+            let successCount = 0;
+            let timeoutCount = 0;
+
+            for (let rep = 0; rep < ADAPTIVE_CONFIG.REPS_PER_SIZE; rep++) {
+                const result = await runSingleUploadTest(bytes, timeout);
+
+                if (result) {
+                    repSpeeds.push(result.speed_mbps);
+                    repTimes.push(result.time_sec);
+                    successCount++;
+                } else {
+                    repSpeeds.push(null);
+                    repTimes.push(null);
+                    timeoutCount++;
+                }
+            }
+
+            const validSpeeds = repSpeeds.filter(s => s !== null) as number[];
+            const validTimes = repTimes.filter(t => t !== null) as number[];
+
+            const avgSpeed = validSpeeds.length > 0
+                ? validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length
+                : null;
+            const avgTime = validTimes.length > 0
+                ? validTimes.reduce((a, b) => a + b, 0) / validTimes.length
+                : null;
+
+            const escalation = shouldEscalate(mb, repTimes, successCount, timeoutCount, threshold);
+
+            results.push({
+                size_mb: mb,
+                rep_speeds_mbps: repSpeeds,
+                rep_times_sec: repTimes,
+                success_count: successCount,
+                timeout_count: timeoutCount,
+                avg_mbps: avgSpeed,
+                avg_time_sec: avgTime,
+                escalated_to_next: escalation.escalate,
+                stop_reason: escalation.reason
+            });
+
+            if (!escalation.escalate) {
+                break;
+            }
+        }
+
+        return results;
+    };
+
+    const getFinalSpeed = (tests: SizeTestResult[]): { speed: number | null; basisMb: number | null } => {
+        for (let i = tests.length - 1; i >= 0; i--) {
+            if (tests[i].avg_mbps !== null && tests[i].success_count >= ADAPTIVE_CONFIG.MIN_SUCCESS_REPS) {
+                return { speed: tests[i].avg_mbps, basisMb: tests[i].size_mb };
+            }
+        }
+        return { speed: null, basisMb: null };
     };
 
     const runSpeedTest = async () => {
@@ -254,20 +460,34 @@ export function HomeSpeedTest() {
             setProgress(20);
 
             // 2. Adaptive Download Test
-            setCurrentTest('Testing download...');
-            const downloadSpeed = await runSingleDownloadTest(ADAPTIVE_CONFIG.SIZES.MEDIUM, ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.MEDIUM);
-            setSpeedResults(prev => ({ ...prev, downloadSpeed: downloadSpeed }));
-            setProgress(60);
+            const downloadResults = await runAdaptiveDownloadTest((msg, pct) => {
+                setCurrentTest(msg);
+                setProgress(pct);
+            });
 
             // 3. Adaptive Upload Test
-            setCurrentTest('Testing upload...');
-            const uploadSpeed = await runSingleUploadTest(ADAPTIVE_CONFIG.SIZES.SMALL, ADAPTIVE_CONFIG.MAX_TIMEOUT_MS.SMALL);
-            setSpeedResults(prev => ({ ...prev, uploadSpeed: uploadSpeed }));
-            setProgress(90);
+            const uploadResults = await runAdaptiveUploadTest((msg, pct) => {
+                setCurrentTest(msg);
+                setProgress(pct);
+            });
 
-            // 4. Classify results
-            if (downloadSpeed !== null && uploadSpeed !== null) {
-                const classified = classifyResults(downloadSpeed, uploadSpeed, Math.round(latencyResult.latency_ms));
+            // 4. Get final speeds
+            const finalDownload = getFinalSpeed(downloadResults);
+            const finalUpload = getFinalSpeed(uploadResults);
+
+            setSpeedResults(prev => ({
+                ...prev,
+                downloadSpeed: finalDownload.speed,
+                uploadSpeed: finalUpload.speed
+            }));
+
+            // 5. Classify results
+            if (finalDownload.speed !== null && finalUpload.speed !== null) {
+                const classified = classifyResults(
+                    finalDownload.speed,
+                    finalUpload.speed,
+                    Math.round(latencyResult.latency_ms)
+                );
                 setClassifiedResults(classified);
             }
 
