@@ -968,56 +968,57 @@ export default function SpeedTestClient() {
                             </div>
                         </div>
 
-                        {/* Adaptive Test Breakdown */}
-                        {downloadTests.length > 0 && (
-                            <div className="space-y-4">
-                                <h4 className="text-lg font-semibold text-white">Download Test Results</h4>
-                                {downloadTests.map((test, idx) => (
-                                    <div key={idx} className="p-4 bg-zinc-800/30 rounded-lg">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-semibold text-white">{test.size_mb}MB Test</span>
-                                            <span className="text-xs text-zinc-400">
-                                                {test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE} successful
-                                            </span>
+                        {/* Adaptive Test Breakdown - Compact */}
+                        {(downloadTests.length > 0 || uploadTests.length > 0) && (
+                            <div className="space-y-3">
+                                <h4 className="text-base font-semibold text-white">Test Breakdown</h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* Download column */}
+                                    {downloadTests.length > 0 && (
+                                        <div className="space-y-2">
+                                            <div className="text-xs font-medium text-zinc-400 uppercase">Download</div>
+                                            {downloadTests.map((test, idx) => (
+                                                <div key={idx} className="p-2 bg-zinc-800/30 rounded text-xs">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="font-medium text-white">{test.size_mb}MB</span>
+                                                        <span className="text-zinc-500">{test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE}</span>
+                                                    </div>
+                                                    {test.avg_mbps !== null && (
+                                                        <div className="text-sm font-bold text-blue-400">
+                                                            {test.avg_mbps.toFixed(1)} Mbps
+                                                        </div>
+                                                    )}
+                                                    {test.stop_reason && (
+                                                        <div className="text-xs text-yellow-400 mt-1">⚠ {test.stop_reason}</div>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
-                                        {test.avg_mbps !== null && (
-                                            <div className="text-lg font-bold text-blue-400 mb-1">
-                                                {test.avg_mbps.toFixed(1)} Mbps avg
-                                            </div>
-                                        )}
-                                        {test.stop_reason && (
-                                            <div className="text-xs text-yellow-400">
-                                                ⚠ {test.stop_reason}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    )}
 
-                        {uploadTests.length > 0 && (
-                            <div className="space-y-4">
-                                <h4 className="text-lg font-semibold text-white">Upload Test Results</h4>
-                                {uploadTests.map((test, idx) => (
-                                    <div key={idx} className="p-4 bg-zinc-800/30 rounded-lg">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-semibold text-white">{test.size_mb}MB Test</span>
-                                            <span className="text-xs text-zinc-400">
-                                                {test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE} successful
-                                            </span>
+                                    {/* Upload column */}
+                                    {uploadTests.length > 0 && (
+                                        <div className="space-y-2">
+                                            <div className="text-xs font-medium text-zinc-400 uppercase">Upload</div>
+                                            {uploadTests.map((test, idx) => (
+                                                <div key={idx} className="p-2 bg-zinc-800/30 rounded text-xs">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="font-medium text-white">{test.size_mb}MB</span>
+                                                        <span className="text-zinc-500">{test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE}</span>
+                                                    </div>
+                                                    {test.avg_mbps !== null && (
+                                                        <div className="text-sm font-bold text-purple-400">
+                                                            {test.avg_mbps.toFixed(1)} Mbps
+                                                        </div>
+                                                    )}
+                                                    {test.stop_reason && (
+                                                        <div className="text-xs text-yellow-400 mt-1">⚠ {test.stop_reason}</div>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
-                                        {test.avg_mbps !== null && (
-                                            <div className="text-lg font-bold text-purple-400 mb-1">
-                                                {test.avg_mbps.toFixed(1)} Mbps avg
-                                            </div>
-                                        )}
-                                        {test.stop_reason && (
-                                            <div className="text-xs text-yellow-400">
-                                                ⚠ {test.stop_reason}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
