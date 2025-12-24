@@ -51,6 +51,325 @@ interface SizeTestResult {
     stop_reason?: string;
 }
 
+// Classification Types
+type RatingLabel = 'POOR' | 'BAD' | 'GOOD' | 'EXCELLENT';
+
+interface UseCaseRating {
+    label: RatingLabel;
+    score: number; // 0-100
+    recommended: string; // Quality recommendation
+    reason: string; // Short explanation
+}
+
+interface OverallRating {
+    label: RatingLabel;
+    score: number; // 0-100
+    bottleneck: 'DOWNLOAD' | 'UPLOAD' | 'LATENCY' | 'STABILITY';
+    user_message: string; // Friendly explanation
+    best_for: string; // e.g., "HD Streaming + Video Calls"
+}
+
+interface ClassifiedResults {
+    download_mbps: number;
+    upload_mbps: number;
+    latency_ms: number;
+    jitter_ms?: number;
+    packet_loss?: number;
+    ratings: {
+        streaming: UseCaseRating;
+        gaming: UseCaseRating;
+        video_calls: UseCaseRating;
+    };
+    overall: OverallRating;
+}
+
+// Classification Functions
+
+function scoreDownload(mbps: number): number {
+    if (mbps <= 0) return 0;
+    if (mbps >= 50) return 100;
+
+    if (mbps < 5) return (mbps / 5) * 40;
+    if (mbps < 15) return 40 + ((mbps - 5) / 10) * 30;
+    return 70 + ((mbps - 15) / 35) * 30;
+}
+
+function scoreUpload(mbps: number): number {
+    if (mbps <= 0) return 0;
+    if (mbps >= 20) return 100;
+
+    if (mbps < 2) return (mbps / 2) * 40;
+    if (mbps < 5) return 40 + ((mbps - 2) / 3) * 30;
+    return 70 + ((mbps - 5) / 15) * 30;
+}
+
+function scoreLatency(ms: number): number {
+    if (ms <= 20) return 100;
+    if (ms >= 300) return 0;
+
+    if (ms <= 50) return 100 - ((ms - 20) / 30) * 20;
+    if (ms <= 80) return 80 - ((ms - 50) / 30) * 20;
+    if (ms <= 120) return 60 - ((ms - 80) / 40) * 20;
+    return 40 - ((ms - 120) / 180) * 40;
+}
+
+function calculateStabilityPenalty(jitter_ms?: number, packet_loss?: number): number {
+    let penalty = 0;
+
+    if (packet_loss !== undefined) {
+        penalty += Math.min(40, packet_loss * 8);
+    }
+
+    if (jitter_ms !== undefined && jitter_ms > 20) {
+        penalty += Math.min(30, jitter_ms - 20);
+    }
+
+    return penalty;
+}
+
+function rateStreaming(
+    download: number,
+    upload: number,
+    latency: number,
+    stabilityPenalty: number
+): UseCaseRating {
+    const baseScore = Math.round(
+        scoreDownload(download) * 0.8 +
+        scoreUpload(upload) * 0.1 +
+        scoreLatency(latency) * 0.1
+    );
+    const score = Math.max(0, baseScore - stabilityPenalty);
+
+    let label: RatingLabel;
+    let recommended: string;
+    let reason: string;
+
+    if (download < 3) {
+        label = 'POOR';
+        recommended = 'SD may struggle';
+        reason = 'Frequent buffering likely';
+    } else if (download < 5) {
+        label = 'BAD';
+        recommended = 'SD';
+        reason = 'SD ok, HD may buffer';
+    } else if (download < 25) {
+        label = 'GOOD';
+        recommended = 'HD';
+        reason = 'HD should be smooth';
+    } else {
+        label = 'EXCELLENT';
+        recommended = '4K';
+        reason = '4K should be smooth';
+    }
+
+    return { label, score, recommended, reason };
+}
+
+function rateGaming(
+    download: number,
+    upload: number,
+    latency: number,
+    stabilityPenalty: number
+): UseCaseRating {
+    const baseScore = Math.round(
+        scoreLatency(latency) * 0.8 +
+        scoreDownload(download) * 0.1 +
+        scoreUpload(upload) * 0.1
+    );
+    const score = Math.max(0, baseScore - stabilityPenalty);
+
+    let label: RatingLabel;
+    let recommended: string;
+    let reason: string;
+
+    const bandwidthTooLow = download < 3 || upload < 1;
+
+    if (latency > 150 || bandwidthTooLow) {
+        label = 'POOR';
+        recommended = 'Not recommended';
+        reason = bandwidthTooLow ? 'Bandwidth too low' : 'Lag likely';
+    } else if (latency > 80) {
+        label = 'BAD';
+        recommended = 'Casual only';
+        reason = 'Playable but laggy';
+    } else if (latency > 30) {
+        label = 'GOOD';
+        recommended = 'Casual';
+        reason = 'Smooth for casual gaming';
+    } else {
+        label = 'EXCELLENT';
+        recommended = 'Competitive';
+        reason = 'Excellent for competitive play';
+    }
+
+    return { label, score, recommended, reason };
+}
+
+function rateVideoCalls(
+    download: number,
+    upload: number,
+    latency: number,
+    stabilityPenalty: number
+): UseCaseRating {
+    const baseScore = Math.round(
+        scoreUpload(upload) * 0.55 +
+        scoreLatency(latency) * 0.35 +
+        scoreDownload(download) * 0.1
+    );
+    const score = Math.max(0, baseScore - stabilityPenalty);
+
+    let label: RatingLabel;
+    let recommended: string;
+    let reason: string;
+
+    if (upload < 1 || latency > 300) {
+        label = 'POOR';
+        recommended = 'Audio-only';
+        reason = 'Calls may drop/freeze';
+    } else if (upload < 2 || latency > 150) {
+        label = 'BAD';
+        recommended = 'SD';
+        reason = 'Choppy video likely';
+    } else if (upload < 5 || latency > 50) {
+        label = 'GOOD';
+        recommended = 'HD';
+        reason = 'Stable calls, HD possible';
+    } else {
+        label = 'EXCELLENT';
+        recommended = 'HD (very stable)';
+        reason = 'Excellent HD calls';
+    }
+
+    return { label, score, recommended, reason };
+}
+
+function detectBottleneck(
+    download: number,
+    upload: number,
+    latency: number,
+    stabilityPenalty: number,
+    ratings: {
+        streaming: UseCaseRating;
+        gaming: UseCaseRating;
+        video_calls: UseCaseRating;
+    }
+): 'DOWNLOAD' | 'UPLOAD' | 'LATENCY' | 'STABILITY' {
+    if (stabilityPenalty > 15) {
+        return 'STABILITY';
+    }
+
+    if ((ratings.gaming.label === 'POOR' || ratings.gaming.label === 'BAD') && latency > 80) {
+        return 'LATENCY';
+    }
+    if ((ratings.video_calls.label === 'POOR' || ratings.video_calls.label === 'BAD') && latency > 150) {
+        return 'LATENCY';
+    }
+
+    if ((ratings.video_calls.label === 'POOR' || ratings.video_calls.label === 'BAD') && upload < 2) {
+        return 'UPLOAD';
+    }
+
+    if ((ratings.streaming.label === 'POOR' || ratings.streaming.label === 'BAD') && download < 5) {
+        return 'DOWNLOAD';
+    }
+
+    const scores = {
+        download: scoreDownload(download),
+        upload: scoreUpload(upload),
+        latency: scoreLatency(latency)
+    };
+
+    const min = Math.min(scores.download, scores.upload, scores.latency);
+    if (min === scores.latency) return 'LATENCY';
+    if (min === scores.upload) return 'UPLOAD';
+    return 'DOWNLOAD';
+}
+
+function calculateOverall(
+    ratings: {
+        streaming: UseCaseRating;
+        gaming: UseCaseRating;
+        video_calls: UseCaseRating;
+    },
+    bottleneck: 'DOWNLOAD' | 'UPLOAD' | 'LATENCY' | 'STABILITY'
+): OverallRating {
+    const avgScore = Math.round(
+        (ratings.streaming.score + ratings.gaming.score + ratings.video_calls.score) / 3
+    );
+
+    const labels = [ratings.streaming.label, ratings.gaming.label, ratings.video_calls.label];
+    const labelScores = labels.map(l =>
+        l === 'EXCELLENT' ? 4 : l === 'GOOD' ? 3 : l === 'BAD' ? 2 : 1
+    );
+    const avgLabelScore = labelScores.reduce((a, b) => a + b) / 3;
+
+    const overallLabel: RatingLabel =
+        avgLabelScore >= 3.5 ? 'EXCELLENT' :
+            avgLabelScore >= 2.5 ? 'GOOD' :
+                avgLabelScore >= 1.5 ? 'BAD' : 'POOR';
+
+    const bottleneckMessages = {
+        LATENCY: 'Try moving closer to Wi-Fi, switching to 5GHz, or using Ethernet.',
+        UPLOAD: 'Video calls need strong upload—try stopping backups or cloud sync.',
+        DOWNLOAD: 'Streaming quality depends on download—try fewer devices or better signal.',
+        STABILITY: 'Connection looks unstable—packet loss/jitter may cause choppy calls.'
+    };
+
+    const excellent = [];
+    const good = [];
+    if (ratings.streaming.label === 'EXCELLENT') excellent.push('4K Streaming');
+    else if (ratings.streaming.label === 'GOOD') good.push('HD Streaming');
+
+    if (ratings.gaming.label === 'EXCELLENT') excellent.push('Competitive Gaming');
+    else if (ratings.gaming.label === 'GOOD') good.push('Gaming');
+
+    if (ratings.video_calls.label === 'EXCELLENT') excellent.push('HD Video Calls');
+    else if (ratings.video_calls.label === 'GOOD') good.push('Video Calls');
+
+    const combined = [...excellent, ...good];
+    const best_for = combined.length > 0
+        ? `Best for: ${combined.join(' + ')}`
+        : 'Limited connectivity';
+
+    return {
+        label: overallLabel,
+        score: avgScore,
+        bottleneck,
+        user_message: bottleneckMessages[bottleneck],
+        best_for
+    };
+}
+
+function classifyResults(
+    download_mbps: number,
+    upload_mbps: number,
+    latency_ms: number,
+    jitter_ms?: number,
+    packet_loss?: number
+): ClassifiedResults {
+    const stabilityPenalty = calculateStabilityPenalty(jitter_ms, packet_loss);
+
+    const streaming = rateStreaming(download_mbps, upload_mbps, latency_ms, stabilityPenalty);
+    const gaming = rateGaming(download_mbps, upload_mbps, latency_ms, stabilityPenalty);
+    const video_calls = rateVideoCalls(download_mbps, upload_mbps, latency_ms, stabilityPenalty);
+
+    const ratings = { streaming, gaming, video_calls };
+
+    const bottleneck = detectBottleneck(download_mbps, upload_mbps, latency_ms, stabilityPenalty, ratings);
+
+    const overall = calculateOverall(ratings, bottleneck);
+
+    return {
+        download_mbps,
+        upload_mbps,
+        latency_ms,
+        jitter_ms,
+        packet_loss,
+        ratings,
+        overall
+    };
+}
+
 export default function SpeedTestClient() {
     const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
     const [downloadSpeed, setDownloadSpeed] = useState<number | null>(null);
@@ -69,6 +388,9 @@ export default function SpeedTestClient() {
     const [uploadTests, setUploadTests] = useState<SizeTestResult[]>([]);
     const [downloadBasisMb, setDownloadBasisMb] = useState<number | null>(null);
     const [uploadBasisMb, setUploadBasisMb] = useState<number | null>(null);
+
+    // Classified results
+    const [classifiedResults, setClassifiedResults] = useState<ClassifiedResults | null>(null);
 
     useEffect(() => {
         fetchLocationInfo();
@@ -394,6 +716,7 @@ export default function SpeedTestClient() {
         setPacketLoss(null);
         setDownloadTests([]);
         setUploadTests([]);
+        setClassifiedResults(null);
         setProgress(0);
 
         try {
@@ -435,6 +758,18 @@ export default function SpeedTestClient() {
             setDownloadBasisMb(finalDownload.basisMb);
             setUploadBasisMb(finalUpload.basisMb);
 
+            // 5. Classify results
+            if (finalDownload.speed !== null && finalUpload.speed !== null && idleLatency !== null) {
+                const classified = classifyResults(
+                    finalDownload.speed,
+                    finalUpload.speed,
+                    Math.round(latencyResult.latency_ms),
+                    Math.round(latencyResult.jitter_ms * 10) / 10,
+                    latencyResult.packet_loss
+                );
+                setClassifiedResults(classified);
+            }
+
             setProgress(100);
             setCurrentTest('Complete!');
         } catch (e) {
@@ -453,24 +788,29 @@ export default function SpeedTestClient() {
         return 'text-green-400';
     };
 
-    const getQualityScore = (metric: 'streaming' | 'gaming' | 'chatting') => {
-        if (!downloadSpeed || !uploadSpeed || !idleLatency || !idleJitter) return { label: '—', color: 'text-zinc-500' };
+    const getLabelColor = (label: RatingLabel) => {
+        switch (label) {
+            case 'EXCELLENT':
+                return 'bg-green-500/20 text-green-400 border-green-500/30';
+            case 'GOOD':
+                return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+            case 'BAD':
+                return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+            case 'POOR':
+                return 'bg-red-500/20 text-red-400 border-red-500/30';
+        }
+    };
 
-        if (metric === 'streaming') {
-            if (downloadSpeed > 25 && idleLatency! < 100) return { label: 'Excellent', color: 'text-green-400' };
-            if (downloadSpeed > 10) return { label: 'Good', color: 'text-blue-400' };
-            if (downloadSpeed > 5) return { label: 'Fair', color: 'text-yellow-400' };
-            return { label: 'Poor', color: 'text-red-400' };
-        } else if (metric === 'gaming') {
-            if (idleLatency < 30 && idleJitter < 10) return { label: 'Excellent', color: 'text-green-400' };
-            if (idleLatency < 60 && idleJitter < 20) return { label: 'Good', color: 'text-blue-400' };
-            if (idleLatency < 100) return { label: 'Fair', color: 'text-yellow-400' };
-            return { label: 'Poor', color: 'text-red-400' };
-        } else {
-            if (uploadSpeed > 5 && idleLatency < 50 && idleJitter < 15) return { label: 'Excellent', color: 'text-green-400' };
-            if (uploadSpeed > 2 && idleLatency < 100) return { label: 'Good', color: 'text-blue-400' };
-            if (uploadSpeed > 1) return { label: 'Fair', color: 'text-yellow-400' };
-            return { label: 'Poor', color: 'text-red-400' };
+    const getLabelTextColor = (label: RatingLabel) => {
+        switch (label) {
+            case 'EXCELLENT':
+                return 'text-green-400';
+            case 'GOOD':
+                return 'text-blue-400';
+            case 'BAD':
+                return 'text-yellow-400';
+            case 'POOR':
+                return 'text-red-400';
         }
     };
 
@@ -670,29 +1010,81 @@ export default function SpeedTestClient() {
                         )}
                     </div>
 
-                    {/* Network Quality Indicators */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800">
-                            <div className="text-sm text-zinc-400 mb-2">Video Streaming</div>
-                            <div className={`text-2xl font-bold ${getQualityScore('streaming').color}`}>
-                                {getQualityScore('streaming').label}
+                    {/* Classified Results - New Section */}
+                    {classifiedResults && (
+                        <div className="space-y-4">
+                            {/* Overall Summary Card */}
+                            <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-900/30 to-purple-900/30 border border-blue-800">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-bold text-white">Network Quality</h3>
+                                    <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getLabelColor(classifiedResults.overall.label)}`}>
+                                        {classifiedResults.overall.label}
+                                    </span>
+                                </div>
+                                <p className="text-white mb-2 font-medium">{classifiedResults.overall.best_for}</p>
+                                <p className="text-sm text-zinc-300">
+                                    <span className="font-semibold">Tip:</span> {classifiedResults.overall.user_message}
+                                </p>
                             </div>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800">
-                            <div className="text-sm text-zinc-400 mb-2">Online Gaming</div>
-                            <div className={`text-2xl font-bold ${getQualityScore('gaming').color}`}>
-                                {getQualityScore('gaming').label}
-                            </div>
-                        </div>
-                        <div className="p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800">
-                            <div className="text-sm text-zinc-400 mb-2">Video Chatting</div>
-                            <div className={`text-2xl font-bold ${getQualityScore('chatting').color}`}>
-                                {getQualityScore('chatting').label}
-                            </div>
-                        </div>
-                    </div>
 
+                            {/* Per-Use-Case Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Streaming */}
+                                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-semibold text-white flex items-center gap-2">
+                                            <span>📺</span>
+                                            <span>Streaming</span>
+                                        </h4>
+                                        <span className={`text-xs px-2 py-1 rounded border ${getLabelColor(classifiedResults.ratings.streaming.label)}`}>
+                                            {classifiedResults.ratings.streaming.label}
+                                        </span>
+                                    </div>
+                                    <div className={`text-2xl font-bold mb-2 ${getLabelTextColor(classifiedResults.ratings.streaming.label)}`}>
+                                        {classifiedResults.ratings.streaming.recommended}
+                                    </div>
+                                    <div className="text-xs text-zinc-400 mb-2">{classifiedResults.ratings.streaming.reason}</div>
+                                    <div className="text-xs text-zinc-600">Score: {classifiedResults.ratings.streaming.score}/100</div>
+                                </div>
 
+                                {/* Gaming */}
+                                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-semibold text-white flex items-center gap-2">
+                                            <span>🎮</span>
+                                            <span>Gaming</span>
+                                        </h4>
+                                        <span className={`text-xs px-2 py-1 rounded border ${getLabelColor(classifiedResults.ratings.gaming.label)}`}>
+                                            {classifiedResults.ratings.gaming.label}
+                                        </span>
+                                    </div>
+                                    <div className={`text-2xl font-bold mb-2 ${getLabelTextColor(classifiedResults.ratings.gaming.label)}`}>
+                                        {classifiedResults.ratings.gaming.recommended}
+                                    </div>
+                                    <div className="text-xs text-zinc-400 mb-2">{classifiedResults.ratings.gaming.reason}</div>
+                                    <div className="text-xs text-zinc-600">Score: {classifiedResults.ratings.gaming.score}/100</div>
+                                </div>
+
+                                {/* Video Calls */}
+                                <div className="p-6 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-semibold text-white flex items-center gap-2">
+                                            <span>📞</span>
+                                            <span>Video Calls</span>
+                                        </h4>
+                                        <span className={`text-xs px-2 py-1 rounded border ${getLabelColor(classifiedResults.ratings.video_calls.label)}`}>
+                                            {classifiedResults.ratings.video_calls.label}
+                                        </span>
+                                    </div>
+                                    <div className={`text-2xl font-bold mb-2 ${getLabelTextColor(classifiedResults.ratings.video_calls.label)}`}>
+                                        {classifiedResults.ratings.video_calls.recommended}
+                                    </div>
+                                    <div className="text-xs text-zinc-400 mb-2">{classifiedResults.ratings.video_calls.reason}</div>
+                                    <div className="text-xs text-zinc-600">Score: {classifiedResults.ratings.video_calls.score}/100</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
 
