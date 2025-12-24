@@ -759,7 +759,12 @@ export default function SpeedTestClient() {
             setUploadBasisMb(finalUpload.basisMb);
 
             // 5. Classify results
-            if (finalDownload.speed !== null && finalUpload.speed !== null && idleLatency !== null) {
+            if (finalDownload.speed !== null && finalUpload.speed !== null && latencyResult) {
+                console.log('Classifying results:', {
+                    download: finalDownload.speed,
+                    upload: finalUpload.speed,
+                    latency: Math.round(latencyResult.latency_ms)
+                });
                 const classified = classifyResults(
                     finalDownload.speed,
                     finalUpload.speed,
@@ -767,7 +772,14 @@ export default function SpeedTestClient() {
                     Math.round(latencyResult.jitter_ms * 10) / 10,
                     latencyResult.packet_loss
                 );
+                console.log('Classification complete:', classified);
                 setClassifiedResults(classified);
+            } else {
+                console.log('Classification skipped - missing data:', {
+                    hasDownload: finalDownload.speed !== null,
+                    hasUpload: finalUpload.speed !== null,
+                    hasLatency: !!latencyResult
+                });
             }
 
             setProgress(100);
