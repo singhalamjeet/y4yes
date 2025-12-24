@@ -967,60 +967,6 @@ export default function SpeedTestClient() {
                                 <div className="text-lg font-bold text-blue-400">Cloudflare</div>
                             </div>
                         </div>
-
-                        {/* Adaptive Test Breakdown - Compact */}
-                        {(downloadTests.length > 0 || uploadTests.length > 0) && (
-                            <div className="space-y-3">
-                                <h4 className="text-base font-semibold text-white">Test Breakdown</h4>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {/* Download column */}
-                                    {downloadTests.length > 0 && (
-                                        <div className="space-y-2">
-                                            <div className="text-xs font-medium text-zinc-400 uppercase">Download</div>
-                                            {downloadTests.map((test, idx) => (
-                                                <div key={idx} className="p-2 bg-zinc-800/30 rounded text-xs">
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <span className="font-medium text-white">{test.size_mb}MB</span>
-                                                        <span className="text-zinc-500">{test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE}</span>
-                                                    </div>
-                                                    {test.avg_mbps !== null && (
-                                                        <div className="text-sm font-bold text-blue-400">
-                                                            {test.avg_mbps.toFixed(1)} Mbps
-                                                        </div>
-                                                    )}
-                                                    {test.stop_reason && (
-                                                        <div className="text-xs text-yellow-400 mt-1">⚠ {test.stop_reason}</div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Upload column */}
-                                    {uploadTests.length > 0 && (
-                                        <div className="space-y-2">
-                                            <div className="text-xs font-medium text-zinc-400 uppercase">Upload</div>
-                                            {uploadTests.map((test, idx) => (
-                                                <div key={idx} className="p-2 bg-zinc-800/30 rounded text-xs">
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <span className="font-medium text-white">{test.size_mb}MB</span>
-                                                        <span className="text-zinc-500">{test.success_count}/{ADAPTIVE_CONFIG.REPS_PER_SIZE}</span>
-                                                    </div>
-                                                    {test.avg_mbps !== null && (
-                                                        <div className="text-sm font-bold text-purple-400">
-                                                            {test.avg_mbps.toFixed(1)} Mbps
-                                                        </div>
-                                                    )}
-                                                    {test.stop_reason && (
-                                                        <div className="text-xs text-yellow-400 mt-1">⚠ {test.stop_reason}</div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* Classified Results - New Section */}
