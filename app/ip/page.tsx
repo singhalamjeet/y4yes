@@ -17,10 +17,22 @@ interface GeoData {
 
 async function getPublicIp() {
     const headersList = await headers();
-    let ip = headersList.get('x-forwarded-for');
+
+    // Try multiple headers in order of preference
+    // CF-Connecting-IP is Cloudflare's header for the real client IP
+    // X-Real-IP is commonly used by proxies
+    // X-Forwarded-For may contain multiple IPs (client, proxy1, proxy2...)
+    let ip = headersList.get('cf-connecting-ip')
+        || headersList.get('x-real-ip')
+        || headersList.get('x-forwarded-for');
+
+    // If x-forwarded-for contains multiple IPs, take the first one (real client)
+    if (ip && ip.includes(',')) {
+        ip = ip.split(',')[0].trim();
+    }
 
     // If no header or local IP, try external service
-    if (!ip || ip === '::1' || ip === '127.0.0.1') {
+    if (!ip || ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
         try {
             const res = await fetch('https://api.ipify.org?format=json', { next: { revalidate: 0 } });
             if (res.ok) {
