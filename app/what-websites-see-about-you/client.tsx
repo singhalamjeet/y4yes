@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { inspectWebsite } from './actions';
 
 interface ServerData {
     ip: string;
@@ -47,6 +48,8 @@ export default function PrivacyDashboardClient({ serverData }: { serverData: Ser
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'check-me' | 'inspect-site'>(defaultTab);
     const [inspectUrl, setInspectUrl] = useState('');
+    const [inspectionResult, setInspectionResult] = useState<any>(null);
+    const [inspecting, setInspecting] = useState(false);
 
     useEffect(() => {
         const initData = async () => {
@@ -138,6 +141,23 @@ export default function PrivacyDashboardClient({ serverData }: { serverData: Ser
 
         initData();
     }, [serverData.ip]);
+
+    const handleInspect = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!inspectUrl) return;
+
+        setInspecting(true);
+        setInspectionResult(null);
+
+        try {
+            const data = await inspectWebsite(inspectUrl);
+            setInspectionResult(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setInspecting(false);
+        }
+    };
 
     const DataRow = ({ label, value, visible = true, note }: { label: string, value: string, visible?: boolean, note?: string }) => (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/30 transition-colors">
