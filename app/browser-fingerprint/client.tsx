@@ -39,7 +39,40 @@ export default function BrowserFingerprintClient() {
         setLoading(true);
 
         try {
-            const fp: FingerprintData = {
+            // Add overall timeout to ensure completion
+            const fingerprintPromise = (async () => {
+                const fp: FingerprintData = {
+                    userAgent: navigator.userAgent,
+                    screen: {
+                        width: window.screen.width,
+                        height: window.screen.height,
+                        colorDepth: window.screen.colorDepth
+                    },
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    locale: navigator.language,
+                    canvasHash: await getCanvasFingerprint(),
+                    webglVendor: getWebGLFingerprint().vendor,
+                    webglRenderer: getWebGLFingerprint().renderer,
+                    fonts: await detectFonts(),
+                    audioHash: await getAudioFingerprint(),
+                    platform: navigator.platform,
+                    hardwareConcurrency: navigator.hardwareConcurrency || 0
+                };
+                return fp;
+            })();
+
+            const timeoutPromise = new Promise<FingerprintData>((_, reject) => {
+                setTimeout(() => reject(new Error('Timeout')), 5000);
+            });
+
+            const fp = await Promise.race([fingerprintPromise, timeoutPromise]);
+
+            setFingerprint(fp);
+            calculateUniqueness(fp);
+        } catch (error) {
+            console.error('Fingerprint error:', error);
+            // Set a basic fingerprint on error
+            const basicFp: FingerprintData = {
                 userAgent: navigator.userAgent,
                 screen: {
                     width: window.screen.width,
@@ -48,19 +81,16 @@ export default function BrowserFingerprintClient() {
                 },
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 locale: navigator.language,
-                canvasHash: await getCanvasFingerprint(),
-                webglVendor: getWebGLFingerprint().vendor,
-                webglRenderer: getWebGLFingerprint().renderer,
-                fonts: await detectFonts(),
-                audioHash: await getAudioFingerprint(),
+                canvasHash: 'error',
+                webglVendor: 'error',
+                webglRenderer: 'error',
+                fonts: [],
+                audioHash: 'error',
                 platform: navigator.platform,
                 hardwareConcurrency: navigator.hardwareConcurrency || 0
             };
-
-            setFingerprint(fp);
-            calculateUniqueness(fp);
-        } catch (error) {
-            console.error('Fingerprint error:', error);
+            setFingerprint(basicFp);
+            calculateUniqueness(basicFp);
         }
 
         setLoading(false);
@@ -167,15 +197,28 @@ export default function BrowserFingerprintClient() {
 
             oscillator.start(0);
 
-            return new Promise((resolve) => {
-                scriptProcessor.onaudioprocess = (event) => {
-                    const output = event.outputBuffer.getChannelData(0);
-                    const hash = simpleHash(output.slice(0, 30).join(','));
-                    oscillator.stop();
-                    audioContext.close();
-                    resolve(hash);
-                };
-            });
+            // Add timeout to prevent hanging
+            return Promise.race([
+                new Promise<string>((resolve) => {
+                    scriptProcessor.onaudioprocess = (event) => {
+                        const output = event.outputBuffer.getChannelData(0);
+                        const hash = simpleHash(output.slice(0, 30).join(','));
+                        oscillator.stop();
+                        audioContext.close();
+                        scriptProcessor.disconnect();
+                        resolve(hash);
+                    };
+                }),
+                new Promise<string>((resolve) => {
+                    setTimeout(() => {
+                        try {
+                            oscillator.stop();
+                            audioContext.close();
+                        } catch (e) { }
+                        resolve('timeout');
+                    }, 1000);
+                })
+            ]);
         } catch {
             return 'unsupported';
         }
