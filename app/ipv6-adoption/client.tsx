@@ -231,7 +231,7 @@ export default function IPv6AdoptionClient() {
                     </div>
 
                     <div className="p-4 bg-red-900/10 border border-red-800/30 rounded-lg">
-                        <h3 className="font-semibold text-red-400 mb-2">🌍 Africa & Parts of Asia - Slow (<20%)</h3>
+                        <h3 className="font-semibold text-red-400 mb-2">🌍 Africa & Parts of Asia - Slow (&lt;20%)</h3>
                         <p className="text-sm text-zinc-300">
                             Infrastructure limitations and costs hinder deployment. However, mobile-first countries may leapfrog directly to IPv6.
                         </p>
