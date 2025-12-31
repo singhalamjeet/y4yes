@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/dns-error-checker',
         '/ip-location-accuracy',
         '/ipv6-adoption',
+        '/what-websites-see-about-you',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified: new Date(),

@@ -24,6 +24,7 @@ export function Footer() {
                             <li><Link href="/dns-error-checker" className="hover:text-blue-400 transition-colors">DNS Error Fixer</Link></li>
                             <li><Link href="/ip-location-accuracy" className="hover:text-blue-400 transition-colors">IP Accuracy Test</Link></li>
                             <li><Link href="/ipv6-adoption" className="hover:text-blue-400 transition-colors">IPv6 Dashboard</Link></li>
+                            <li><Link href="/what-websites-see-about-you" className="hover:text-blue-400 transition-colors">Privacy Check</Link></li>
                             <li><Link href="/speed-test" className="hover:text-blue-400 transition-colors">Speed Test</Link></li>
                             <li><Link href="/traceroute" className="hover:text-blue-400 transition-colors">Traceroute</Link></li>
                             <li><Link href="/supertool" className="hover:text-blue-400 transition-colors">SuperTool</Link></li>
