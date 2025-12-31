@@ -165,88 +165,216 @@ export default function PrivacyDashboardClient({ serverData }: { serverData: Ser
 
             {/* Hero Section */}
             <div className="text-center space-y-6 pt-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-900/20 border border-green-800/30 text-green-400 text-sm font-medium mb-2">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    Live Privacy Check Running
-                </div>
+                {activeTab === 'check-me' ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-900/20 border border-green-800/30 text-green-400 text-sm font-medium mb-2">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        Live Privacy Check
+                    </div>
+                ) : (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/20 border border-purple-800/30 text-purple-400 text-sm font-medium mb-2">
+                        <span className="text-lg">🔍</span>
+                        Website Inspector
+                    </div>
+                )}
+
                 <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent pb-1">
-                    What Websites See About You
+                    {activeTab === 'check-me' ? 'What Websites See About You' : 'Inspect a Website'}
                 </h1>
+
                 <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-                    This is the information a typical website can see when you visit a page — without logging in and without cookies.
+                    {activeTab === 'check-me'
+                        ? 'This is the information a typical website can see when you visit a page — without logging in and without cookies.'
+                        : 'See what information a website exposes publicly (Headers, DNS, Security) without revealing your own data.'
+                    }
                 </p>
-                <div className="flex justify-center gap-4 text-sm text-zinc-500">
-                    <span className="flex items-center gap-1">🚫 No Cookies</span>
-                    <span className="flex items-center gap-1">🛡️ No Storage</span>
-                    <span className="flex items-center gap-1">✨ Session Only</span>
+
+                {/* Tab Controls */}
+                <div className="flex justify-center gap-2 mt-8">
+                    <button
+                        onClick={() => setActiveTab('check-me')}
+                        className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'check-me'
+                                ? 'bg-white text-black'
+                                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+                            }`}
+                    >
+                        Check Myself
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('inspect-site')}
+                        className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'inspect-site'
+                                ? 'bg-white text-black'
+                                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+                            }`}
+                    >
+                        Check a Website (Advanced)
+                    </button>
                 </div>
             </div>
 
-            {/* Dashboard Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* TAB CONTENT: CHECK ME */}
+            {activeTab === 'check-me' && (
+                <>
+                    {/* Dashboard Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* 1. Network Identity */}
-                <SectionCard title="Visible: Network & Location" icon="🌐">
-                    <DataRow label="Public IP Address" value={serverData.ip}
-                        note="Your digital address" />
-                    <DataRow label="Internet Provider (ISP)" value={clientData?.isp || 'Detecting...'}
-                        note="Owner of this IP" />
-                    <DataRow label="Location" value={`${clientData?.city || '...'}, ${clientData?.country || '...'}`}
-                        note="Approximate, based on IP" />
-                    <DataRow label="ASN" value={clientData?.asn || '...'}
-                        note="Autonomous System Number" />
-                    <DataRow label="Connection Protocol" value={`${clientData?.protocol || 'HTTPS'} / ${serverData.encoding}`}
-                        note="Transport security" />
-                </SectionCard>
+                        {/* 1. Network Identity */}
+                        <SectionCard title="Visible: Network & Location" icon="🌐">
+                            <DataRow label="Public IP Address" value={serverData.ip}
+                                note="Your digital address" />
+                            <DataRow label="Internet Provider (ISP)" value={clientData?.isp || 'Detecting...'}
+                                note="Owner of this IP" />
+                            <DataRow label="Location" value={`${clientData?.city || '...'}, ${clientData?.country || '...'}`}
+                                note="Approximate, based on IP" />
+                            <DataRow label="ASN" value={clientData?.asn || '...'}
+                                note="Autonomous System Number" />
+                            <DataRow label="Connection Protocol" value={`${clientData?.protocol || 'HTTPS'} / ${serverData.encoding}`}
+                                note="Transport security" />
+                        </SectionCard>
 
-                {/* 2. Device Fingerprint */}
-                <SectionCard title="Visible: Device Details" icon="💻">
-                    <DataRow label="Operating System" value={serverData.platform.replace(/"/g, '')}
-                        note="Detected OS" />
-                    <DataRow label="Screen Resolution" value={clientData?.screenResolution || '...'}
-                        note="Monitor size" />
-                    <DataRow label="GPU Renderer" value={clientData?.gpuRenderer || 'Refused'}
-                        note="Graphics card model" />
-                    <DataRow label="Battery/Hardware" value={clientData?.hardwareConcurrency ? `${clientData.hardwareConcurrency} Cores` : '...'}
-                        note="Device capabilities" />
-                    <DataRow label="User Agent" value={serverData.userAgent.substring(0, 30) + '...'}
-                        note="Browser ID string" />
-                </SectionCard>
+                        {/* 2. Device Fingerprint */}
+                        <SectionCard title="Visible: Device Details" icon="💻">
+                            <DataRow label="Operating System" value={serverData.platform.replace(/"/g, '')}
+                                note="Detected OS" />
+                            <DataRow label="Screen Resolution" value={clientData?.screenResolution || '...'}
+                                note="Monitor size" />
+                            <DataRow label="GPU Renderer" value={clientData?.gpuRenderer || 'Refused'}
+                                note="Graphics card model" />
+                            <DataRow label="Battery/Hardware" value={clientData?.hardwareConcurrency ? `${clientData.hardwareConcurrency} Cores` : '...'}
+                                note="Device capabilities" />
+                            <DataRow label="User Agent" value={serverData.userAgent.substring(0, 30) + '...'}
+                                note="Browser ID string" />
+                        </SectionCard>
 
-                {/* 3. Browser & Privacy Signals */}
-                <SectionCard title="Visible: Browser Settings" icon="⚙️">
-                    <DataRow label="Browser Language" value={serverData.acceptLanguage.split(',')[0]}
-                        note="Preferred language" />
-                    <DataRow label="Local Time" value={clientData?.localTime || '...'}
-                        note="Matches your OS clock" />
-                    <DataRow label="Timezone" value={clientData?.timezone || '...'}
-                        note="System timezone" />
-                    <DataRow label="Do Not Track" value={serverData.dnt === '1' ? 'Enabled' : 'Disabled'}
-                        note="DNT Header" />
-                    <DataRow label="WebRTC Local IP" value={clientData?.webrtcIp || 'Not Detected'}
-                        visible={clientData?.webrtcIp !== 'Not Detected'}
-                        note={clientData?.webrtcIp !== 'Not Detected' ? '⚠️ Potential Leak' : 'Safe'} />
-                </SectionCard>
+                        {/* 3. Browser & Privacy Signals */}
+                        <SectionCard title="Visible: Browser Settings" icon="⚙️">
+                            <DataRow label="Browser Language" value={serverData.acceptLanguage.split(',')[0]}
+                                note="Preferred language" />
+                            <DataRow label="Local Time" value={clientData?.localTime || '...'}
+                                note="Matches your OS clock" />
+                            <DataRow label="Timezone" value={clientData?.timezone || '...'}
+                                note="System timezone" />
+                            <DataRow label="Do Not Track" value={serverData.dnt === '1' ? 'Enabled' : 'Disabled'}
+                                note="DNT Header" />
+                            <DataRow label="WebRTC Local IP" value={clientData?.webrtcIp || 'Not Detected'}
+                                visible={clientData?.webrtcIp !== 'Not Detected'}
+                                note={clientData?.webrtcIp !== 'Not Detected' ? '⚠️ Potential Leak' : 'Safe'} />
+                        </SectionCard>
 
-                {/* 4. What is HIDDEN (Section B) */}
-                <div className="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-xl overflow-hidden h-full">
-                    <div className="px-4 py-3 bg-zinc-800/30 border-b border-zinc-800 flex items-center gap-2">
-                        <span className="text-xl">🔒</span>
-                        <h3 className="font-semibold text-zinc-300">NOT Visible (Private)</h3>
+                        {/* 4. What is HIDDEN (Section B) */}
+                        <div className="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-xl overflow-hidden h-full">
+                            <div className="px-4 py-3 bg-zinc-800/30 border-b border-zinc-800 flex items-center gap-2">
+                                <span className="text-xl">🔒</span>
+                                <h3 className="font-semibold text-zinc-300">NOT Visible (Private)</h3>
+                            </div>
+                            <div className="p-2">
+                                <DataRow label="Real Name" value="HIDDEN" visible={false} note="Never sent automatically" />
+                                <DataRow label="Exact Home Address" value="HIDDEN" visible={false} note="IP is only coarse location" />
+                                <DataRow label="Email Address" value="HIDDEN" visible={false} note="Requires explicit input" />
+                                <DataRow label="Phone Number" value="HIDDEN" visible={false} note="Not accessible by browser" />
+                                <DataRow label="Files on Device" value="HIDDEN" visible={false} note="Sandboxed by browser" />
+                                <DataRow label="Browsing History" value="HIDDEN" visible={false} note="Restricted access" />
+                            </div>
+                        </div>
                     </div>
-                    <div className="p-2">
-                        <DataRow label="Real Name" value="HIDDEN" visible={false} note="Never sent automatically" />
-                        <DataRow label="Exact Home Address" value="HIDDEN" visible={false} note="IP is only coarse location" />
-                        <DataRow label="Email Address" value="HIDDEN" visible={false} note="Requires explicit input" />
-                        <DataRow label="Phone Number" value="HIDDEN" visible={false} note="Not accessible by browser" />
-                        <DataRow label="Files on Device" value="HIDDEN" visible={false} note="Sandboxed by browser" />
-                        <DataRow label="Browsing History" value="HIDDEN" visible={false} note="Restricted access" />
+                </>
+            )}
+
+            {/* TAB CONTENT: INSPECT WEBSITE */}
+            {activeTab === 'inspect-site' && (
+                <div className="space-y-8 animate-in fade-in duration-300">
+
+                    {/* URL Input */}
+                    <div className="max-w-xl mx-auto">
+                        <form onSubmit={handleInspect} className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="example.com"
+                                className="flex-1 bg-zinc-900 border border-zinc-700 rounded-full px-6 py-3 text-white outline-none focus:border-blue-500 transition-colors"
+                                value={inspectUrl}
+                                onChange={(e) => setInspectUrl(e.target.value)}
+                            />
+                            <button
+                                type="submit"
+                                disabled={inspecting || !inspectUrl}
+                                className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-8 py-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {inspecting ? 'Checking...' : 'Inspect'}
+                            </button>
+                        </form>
                     </div>
+
+                    {/* Disclaimer */}
+                    <div className="max-w-2xl mx-auto bg-blue-900/10 border border-blue-800/30 p-4 rounded-xl flex items-start gap-3">
+                        <span className="text-xl">ℹ️</span>
+                        <div className="text-sm text-blue-200">
+                            <strong>Public Info Only:</strong> This tool inspects what a website server exposes to the public (DNS, Headers, Security Config).
+                            It does NOT track users, access private data, or perform any hacking techniques.
+                        </div>
+                    </div>
+
+                    {/* Results */}
+                    {inspectionResult && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            {/* Security Summary */}
+                            <SectionCard title="Security Signals" icon="🛡️">
+                                <DataRow label="HTTPS" value={inspectionResult.security.https ? 'Yes' : 'No'} visible={inspectionResult.security.https} />
+                                <DataRow label="HSTS Header" value={inspectionResult.security.hsts ? 'Present' : 'Missing'} visible={inspectionResult.security.hsts} note="Forces secure connections" />
+                                <DataRow label="CSP Header" value={inspectionResult.security.csp ? 'Present' : 'Missing'} visible={inspectionResult.security.csp} note="Prevents XSS attacks" />
+                                <DataRow label="X-Frame-Options" value={inspectionResult.security.xFrameOptions ? 'Present' : 'Missing'} visible={inspectionResult.security.xFrameOptions} note="Prevents clickjacking" />
+                            </SectionCard>
+
+                            {/* DNS Info */}
+                            <SectionCard title="DNS Records" icon="📡">
+                                {inspectionResult.dns?.a?.length > 0 ? (
+                                    inspectionResult.dns.a.map((ip: string) => (
+                                        <DataRow key={ip} label="A Record (IPv4)" value={ip} />
+                                    ))
+                                ) : (
+                                    <DataRow label="A Record" value="None found" visible={false} />
+                                )}
+                                {inspectionResult.dns?.aaaa?.length > 0 && (
+                                    inspectionResult.dns.aaaa.map((ip: string) => (
+                                        <DataRow key={ip} label="AAAA Record (IPv6)" value={ip} />
+                                    ))
+                                )}
+                            </SectionCard>
+
+                            {/* HTTP Headers */}
+                            <div className="md:col-span-2 bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden">
+                                <div className="px-4 py-3 bg-zinc-800/50 border-b border-zinc-800 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">📄</span>
+                                        <h3 className="font-semibold text-white">Raw HTTP Headers</h3>
+                                    </div>
+                                    <div className="text-sm text-zinc-400">
+                                        Status: <span className={inspectionResult.http?.status === 200 ? 'text-green-400' : 'text-yellow-400'}>{inspectionResult.http?.status}</span>
+                                    </div>
+                                </div>
+                                <div className="p-0 overflow-x-auto">
+                                    <table className="w-full text-sm font-mono text-zinc-400">
+                                        <tbody>
+                                            {Object.entries(inspectionResult.http?.headers || {}).map(([key, value]) => (
+                                                <tr key={key} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                                                    <td className="p-3 text-blue-300 w-1/3 whitespace-nowrap">{key}</td>
+                                                    <td className="p-3 text-zinc-300 break-all">{value as string}</td>
+                                                </tr>
+                                            ))}
+                                            {Object.keys(inspectionResult.http?.headers || {}).length === 0 && (
+                                                <tr><td className="p-4 text-center text-zinc-500" colSpan={2}>No headers retrieved</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    )}
                 </div>
-            </div>
+            )}
 
             {/* Educational Content */}
             <div className="grid md:grid-cols-3 gap-8 pt-8">
