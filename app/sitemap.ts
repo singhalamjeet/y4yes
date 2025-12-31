@@ -23,6 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/url-encode',
         '/ip',
         '/sitemap-page',
+        '/browser-fingerprint',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified: new Date(),
@@ -30,11 +31,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: route === '' ? 1 : 0.8,
     }));
 
-    // Blog posts - in a real app, fetch these from CMS/DB
+    // Blog posts
     const posts = [
-        'understanding-dns-records',
-        'ipv4-vs-ipv6',
-        'how-ssl-works',
+        'how-to-find-ip-address',
+        'ipv4-vs-ipv6-complete-guide',
+        'internet-speed-test-guide',
+        'dns-explained-simple-guide',
+        'network-troubleshooting-commands',
     ].map((slug) => ({
         url: `${baseUrl}/blog/${slug}`,
         lastModified: new Date(),
