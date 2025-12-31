@@ -31,7 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified: new Date(), // Updated for Advanced Inspector feature
-        changeFrequency: 'daily',
+        changeFrequency: 'daily' as const,
         priority: route === '' ? 1 : 0.8,
     }));
 
