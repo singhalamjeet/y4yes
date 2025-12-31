@@ -59,11 +59,10 @@ export default function SitemapPage() {
                         <p className="text-sm text-zinc-400 mt-1">Access 20+ network tools from one interface</p>
                     </Link>
                 </div>
-        </div>
-            </section >
+            </section>
 
-        {/* Research & Privacy Tools Section */ }
-        < section className = "space-y-6" >
+            {/* Research & Privacy Tools Section */}
+            <section className="space-y-6">
                 <h2 className="text-2xl font-bold text-white border-b border-zinc-800 pb-2">Research & Privacy Tools</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link href="/browser-fingerprint" className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-blue-500/50 transition-all group">
@@ -85,8 +84,8 @@ export default function SitemapPage() {
                 </div>
             </section >
 
-        {/* Company Pages */ }
-        < section className = "space-y-6" >
+            {/* Company Pages */}
+            < section className="space-y-6" >
                 <h2 className="text-2xl font-bold text-white border-b border-zinc-800 pb-2">Company</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link href="/about" className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-blue-500/50 transition-all group">
@@ -108,8 +107,8 @@ export default function SitemapPage() {
                 </div>
             </section >
 
-        {/* Legal Pages */ }
-        < section className = "space-y-6" >
+            {/* Legal Pages */}
+            < section className="space-y-6" >
                 <h2 className="text-2xl font-bold text-white border-b border-zinc-800 pb-2">Legal</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link href="/privacy" className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-blue-500/50 transition-all group">
@@ -123,8 +122,8 @@ export default function SitemapPage() {
                 </div>
             </section >
 
-        {/* XML Sitemap */ }
-        < section className = "p-6 rounded-xl bg-zinc-900/30 border border-zinc-800" >
+            {/* XML Sitemap */}
+            < section className="p-6 rounded-xl bg-zinc-900/30 border border-zinc-800" >
                 <h2 className="text-xl font-bold text-white mb-2">For Search Engines</h2>
                 <p className="text-zinc-400 text-sm mb-3">
                     Looking for the XML sitemap? You can find it at:
