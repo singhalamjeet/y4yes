@@ -1,55 +1,36 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { blogPosts } from './blogData';
 
 export const metadata: Metadata = {
-    title: 'Blog - Network Insights & Tutorials',
-    description: 'Read articles, tutorials, and guides about networking, DNS, security, SSL/TLS, and web development from the y4yes team.',
-    keywords: ['blog', 'network tutorials', 'dns guides', 'security articles', 'networking'],
+    title: 'Network Tools Blog - Tutorials, Guides & Tips | y4yes',
+    description: 'Expert guides on networking, DNS, IP addresses, internet speed, and troubleshooting. Learn from comprehensive tutorials and boost your network knowledge.',
+    keywords: [
+        'network blog',
+        'networking tutorials',
+        'dns guides',
+        'ip address guide',
+        'internet speed tips',
+        'network troubleshooting',
+        'tech blog'
+    ],
 };
-
-// Dummy blog data - in a real app this would come from a CMS or MDX files
-const posts = [
-    {
-        slug: 'understanding-dns-records',
-        title: 'Understanding DNS Records: A Beginner\'s Guide',
-        excerpt: 'Learn the difference between A, AAAA, CNAME, MX, and TXT records and how they control your domain.',
-        date: '2025-11-28',
-        readTime: '5 min read',
-        category: 'DNS'
-    },
-    {
-        slug: 'ipv4-vs-ipv6',
-        title: 'IPv4 vs IPv6: What\'s the Difference?',
-        excerpt: 'An in-depth look at the two versions of the Internet Protocol and why the transition to IPv6 matters.',
-        date: '2025-11-25',
-        readTime: '7 min read',
-        category: 'Networking'
-    },
-    {
-        slug: 'how-ssl-works',
-        title: 'How SSL/TLS Certificates Protect Your Data',
-        excerpt: 'Demystifying the handshake process and encryption that keeps your web browsing secure.',
-        date: '2025-11-20',
-        readTime: '6 min read',
-        category: 'Security'
-    }
-];
 
 export default function BlogPage() {
     return (
         <div className="max-w-4xl mx-auto space-y-12 py-8">
             <section className="text-center space-y-4">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                    Network Insights
+                    Network Tools Blog
                 </h1>
                 <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-                    Articles, tutorials, and guides about networking, security, and web development.
+                    Expert guides, tutorials, and tips to master networking, DNS, speed testing, and troubleshooting.
                 </p>
             </section>
 
             <div className="grid gap-6">
-                {posts.map((post) => (
+                {blogPosts.map((post) => (
                     <Link key={post.slug} href={`/blog/${post.slug}`} className="group">
                         <article className="p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-blue-500/50 hover:bg-zinc-900/80 transition-all duration-300">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
@@ -83,3 +64,4 @@ export default function BlogPage() {
         </div>
     );
 }
+
