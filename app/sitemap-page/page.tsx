@@ -85,6 +85,10 @@ export default function SitemapPage() {
                         <h3 className="font-semibold text-white group-hover:text-blue-400">What Websites See About You</h3>
                         <p className="text-sm text-zinc-400 mt-1">Live privacy check showing exposed browser data</p>
                     </Link>
+                    <Link href="/what-websites-see-about-you?tab=inspect" className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-purple-500/50 transition-all group">
+                        <h3 className="font-semibold text-white group-hover:text-purple-400">Website Public Inspector</h3>
+                        <p className="text-sm text-zinc-400 mt-1">Analyze any website's HTTP headers, DNS, and security</p>
+                    </Link>
                 </div>
             </section >
 

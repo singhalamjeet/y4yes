@@ -39,8 +39,13 @@ interface ExtendedClientData {
 }
 
 export default function PrivacyDashboardClient({ serverData }: { serverData: ServerData }) {
+    const searchParams = useSearchParams();
+    const defaultTab = searchParams.get('tab') === 'inspect' ? 'inspect-site' : 'check-me';
+
     const [clientData, setClientData] = useState<ExtendedClientData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'check-me' | 'inspect-site'>(defaultTab);
+    const [inspectUrl, setInspectUrl] = useState('');
 
     useEffect(() => {
         const initData = async () => {
@@ -196,8 +201,8 @@ export default function PrivacyDashboardClient({ serverData }: { serverData: Ser
                     <button
                         onClick={() => setActiveTab('check-me')}
                         className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'check-me'
-                                ? 'bg-white text-black'
-                                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+                            ? 'bg-white text-black'
+                            : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
                             }`}
                     >
                         Check Myself
@@ -205,8 +210,8 @@ export default function PrivacyDashboardClient({ serverData }: { serverData: Ser
                     <button
                         onClick={() => setActiveTab('inspect-site')}
                         className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'inspect-site'
-                                ? 'bg-white text-black'
-                                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+                            ? 'bg-white text-black'
+                            : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
                             }`}
                     >
                         Check a Website (Advanced)

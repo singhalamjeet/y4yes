@@ -30,8 +30,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/what-websites-see-about-you',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
+        lastModified: new Date(), // Updated for Advanced Inspector feature
+        changeFrequency: 'daily',
         priority: route === '' ? 1 : 0.8,
     }));
 
