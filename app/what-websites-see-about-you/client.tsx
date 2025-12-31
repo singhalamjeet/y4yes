@@ -332,6 +332,8 @@ export default function PrivacyDashboardClient({ serverData }: { serverData: Ser
                             <p className="text-xs text-zinc-400 mb-2 font-semibold">Embed Snippet:</p>
                             <textarea
                                 readOnly
+                                title="Embed code"
+                                aria-label="Embed code"
                                 className="w-full p-2 bg-zinc-900 border border-zinc-800 rounded text-xs text-zinc-500 font-mono resize-none h-20"
                                 value={`<iframe src="https://y4yes.com/what-websites-see-about-you" width="100%" height="600" loading="lazy" style="border:none;"></iframe>`}
                             />
