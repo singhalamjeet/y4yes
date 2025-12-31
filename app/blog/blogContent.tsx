@@ -1,6 +1,7 @@
+import React from 'react';
 import Link from 'next/link';
 
-export const blogContent: Record<string, { content: JSX.Element }> = {
+export const blogContent: Record<string, { content: React.ReactElement }> = {
     'how-to-find-ip-address': {
         content: (
             <>
