@@ -10,6 +10,7 @@ function App() {
     const [inspection, setInspection] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
+    const [ipData, setIpData] = useState<{ ip: string; city?: string; country?: string }>({ ip: 'Loading...' });
 
     useEffect(() => {
         // Get current tab
@@ -18,6 +19,38 @@ function App() {
                 setActiveTab(tabs[0]);
             }
         });
+
+        // Fetch Public IP and Location with fallback
+        const fetchIp = async () => {
+            try {
+                // Primary: ipwho.is (IP + Location)
+                const res = await fetch('https://ipwho.is/');
+                const data = await res.json();
+
+                if (data.success !== false) {
+                    setIpData({
+                        ip: data.ip,
+                        city: data.city,
+                        country: data.country
+                    });
+                    return;
+                }
+            } catch (e) {
+                console.error('Primary IP fetch failed:', e);
+            }
+
+            try {
+                // Fallback: ipify (IP only)
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                setIpData({ ip: data.ip });
+            } catch (e) {
+                console.error('Fallback IP fetch failed:', e);
+                setIpData({ ip: 'Unknown' });
+            }
+        };
+
+        fetchIp();
     }, []);
 
     const inspectCurrentTab = async () => {
@@ -37,7 +70,7 @@ function App() {
     };
 
     const openTool = (path: string) => {
-        chrome.tabs.create({ url: `http://localhost:3000${path}` });
+        chrome.tabs.create({ url: `https://y4yes.com${path}` });
     };
 
     return (
@@ -49,11 +82,26 @@ function App() {
                 <div className="text-xs text-zinc-500">Companion</div>
             </header>
 
+            {/* Public IP & Location Display */}
+            <div className="mb-6 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl flex justify-between items-center">
+                <div>
+                    <div className="text-xs text-zinc-500 mb-1">Your Public IP</div>
+                    <div className="text-lg font-mono font-bold text-white leading-tight">{ipData.ip}</div>
+                    {ipData.city && (
+                        <div className="text-xs text-zinc-400 mt-1 flex items-center gap-1">
+                            <span className="text-blue-400">📍</span>
+                            {ipData.city}, {ipData.country}
+                        </div>
+                    )}
+                </div>
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+            </div>
+
             {/* Quick Search */}
             <div className="relative mb-6">
                 <input
                     type="text"
-                    placeholder="Search domain or IP..."
+                    placeholder="Search query..."
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-2 pl-9 pr-3 text-sm focus:outline-none focus:border-blue-500"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}

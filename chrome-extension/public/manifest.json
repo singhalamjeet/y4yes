@@ -10,7 +10,10 @@
   ],
   "host_permissions": [
     "https://y4yes.com/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "https://ipapi.co/*",
+    "https://ipwho.is/*",
+    "https://api.ipify.org/*"
   ],
   "action": {
     "default_popup": "index.html",
