@@ -1,11 +1,10 @@
 {
   "manifest_version": 3,
   "name": "y4yes - Network Tools Companion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Instant access to DNS Lookup, Speed Test, SSL Check, and Website Inspection tools.",
   "permissions": [
     "activeTab",
-    "scripting",
     "storage"
   ],
   "host_permissions": [

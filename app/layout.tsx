@@ -86,7 +86,13 @@ export default function RootLayout({
                     "price": "0",
                     "priceCurrency": "USD"
                   },
-                  "description": "A free, secure suite of network utilities including DNS Lookup, Speed Test, Ping, and SSL Checker for developers."
+                  "description": "A free, secure suite of network utilities including DNS Lookup, Speed Test, Ping, and SSL Checker for developers.",
+                  "license": "https://opensource.org/licenses/MIT",
+                  "creator": {
+                    "@type": "Organization",
+                    "name": "y4yes Team",
+                    "url": "https://y4yes.com"
+                  }
                 }
               ]
             })
