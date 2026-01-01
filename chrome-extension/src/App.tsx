@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Shield, Globe, Activity, Search } from 'lucide-react';
 
 // Configuration
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://y4yes.com/api';
 const API_KEY = 'y4yes_ext_secure_8829_key_v1';
 
 function App() {
