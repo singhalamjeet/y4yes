@@ -1,0 +1,1 @@
+chrome.runtime.onInstalled.addListener(()=>{chrome.contextMenus.create({id:"analyze-with-y4yes",title:"Analyze '%s' with y4yes",contexts:["selection","link"]})});chrome.contextMenus.onClicked.addListener((e,n)=>{if(e.menuItemId==="analyze-with-y4yes"){const t=e.selectionText||e.linkUrl;t&&chrome.tabs.create({url:`http://localhost:3000/supertool?q=${encodeURIComponent(t)}`})}});
