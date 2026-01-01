@@ -75,6 +75,7 @@ export default function RootLayout({
                     "query-input": "required name=search_term_string"
                   }
                 },
+
                 {
                   "@type": "SoftwareApplication",
                   "name": "y4yes Network Tools Suite",
@@ -86,35 +87,6 @@ export default function RootLayout({
                     "priceCurrency": "USD"
                   },
                   "description": "A free, secure suite of network utilities including DNS Lookup, Speed Test, Ping, and SSL Checker for developers."
-                },
-                {
-                  "@type": "FAQPage",
-                  "mainEntity": [
-                    {
-                      "@type": "Question",
-                      "name": "What is y4yes Network Tools Suite?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "y4yes is a free, secure, and all-in-one network utility suite designed for developers and network administrators. It combines essential tools like DNS Lookup, Port Scanning, SSL Verification, and Whois Lookup."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "How can I check if my DNS records are propagating correctly?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "You can use the y4yes DNS Lookup tool to instantly query A, MX, CNAME, and TXT records simultaneously to verify global propagation."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Is checking my IP address or scanning ports on y4yes safe?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes. y4yes operates as a client-side optimized tool suite. We do not log your sensitive query data during Ping Tests, Traceroutes, or Port Scans."
-                      }
-                    }
-                  ]
                 }
               ]
             })

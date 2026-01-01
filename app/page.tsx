@@ -56,8 +56,47 @@ const tools = [
 ];
 
 export default function Home() {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is y4yes Network Tools Suite?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "y4yes is a free, secure, and all-in-one network utility suite designed for developers and network administrators. It combines essential tools like DNS Lookup, Port Scanning, SSL Verification, and Whois Lookup."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How can I check if my DNS records are propagating correctly?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can use the y4yes DNS Lookup tool to instantly query A, MX, CNAME, and TXT records simultaneously to verify global propagation."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is checking my IP address or scanning ports on y4yes safe?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. y4yes operates as a client-side optimized tool suite. We do not log your sensitive query data during Ping Tests, Traceroutes, or Port Scans."
+            }
+          }
+        ]
+      }
+    ]
+  };
+
   return (
     <div className="space-y-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <section className="text-center space-y-2 py-6">
         <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           Network Tools Suite
