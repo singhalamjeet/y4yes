@@ -7,6 +7,26 @@ export function Navbar() {
         <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           y4yes
         </Link>
+
+        {/* Extension Banner */}
+        <div className="hidden md:flex">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              alert("The extension is currently under review by the Chrome Web Store. Check back soon!");
+            }}
+            className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-4 py-1.5 rounded-full text-sm font-medium text-blue-400 hover:bg-blue-500/20 transition-all hover:scale-105 group"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            New: Get y4yes for Chrome
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-0.5 transition-transform"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+          </a>
+        </div>
+
         <div className="flex gap-6 items-center text-sm font-medium text-zinc-400">
           <Link href="/" className="hover:text-white transition-colors">Home</Link>
           <div className="relative group">
