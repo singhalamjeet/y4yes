@@ -36,7 +36,13 @@ export default function IPv6AdoptionPage() {
         "spatialCoverage": {
             "@type": "Place",
             "name": "Global"
-        }
+        },
+        "creator": {
+            "@type": "Organization",
+            "name": "y4yes",
+            "url": "https://y4yes.com"
+        },
+        "license": "https://creativecommons.org/licenses/by/4.0/"
     };
 
     return (
