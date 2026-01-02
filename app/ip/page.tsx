@@ -128,8 +128,8 @@ export default async function IpPage() {
 
     const isp = geoData.isp || geoData.org || 'Unknown';
 
-    // Structured Data for SEO
-    const structuredData = {
+    // Structured Data for SEO: WebApp and Breadcrumbs
+    const appSchema = {
         "@context": "https://schema.org",
         "@graph": [
             {
@@ -160,51 +160,54 @@ export default async function IpPage() {
                         "item": "https://y4yes.com/ip"
                     }
                 ]
+            }
+        ]
+    };
+
+    // Separate FAQ Schema to avoid "Duplicate field 'FAQPage'" errors
+    const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is my IP address?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Your IP address is a unique numerical identifier assigned to your device when connected to the internet. It allows other computers and servers to communicate with your device."
+                }
             },
             {
-                "@type": "FAQPage",
-                "mainEntity": [
-                    {
-                        "@type": "Question",
-                        "name": "What is my IP address?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "Your IP address is a unique numerical identifier assigned to your device when connected to the internet. It allows other computers and servers to communicate with your device."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "How do I find my public IP address?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "You can find your public IP address by visiting this page, which automatically detects and displays your IP address along with location and ISP information."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "What information can someone get from my IP address?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "From your IP address, someone can determine your approximate geographic location (city/region), your Internet Service Provider (ISP), and your timezone. However, your exact physical address and personal information cannot be determined from just your IP."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "Can I hide my IP address?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "Yes, you can hide your IP address by using a VPN (Virtual Private Network), proxy server, or Tor browser. These tools mask your real IP address by routing your internet traffic through different servers."
-                        }
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "What's the difference between IPv4 and IPv6?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "IPv4 uses a 32-bit address format (e.g., 192.168.1.1) providing about 4.3 billion addresses. IPv6 uses a 128-bit format (e.g., 2001:0db8::1) providing virtually unlimited addresses. IPv6 was created to solve IPv4 address exhaustion."
-                        }
-                    }
-                ]
+                "@type": "Question",
+                "name": "How do I find my public IP address?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "You can find your public IP address by visiting this page, which automatically detects and displays your IP address along with location and ISP information."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What information can someone get from my IP address?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "From your IP address, someone can determine your approximate geographic location (city/region), your Internet Service Provider (ISP), and your timezone. However, your exact physical address and personal information cannot be determined from just your IP."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I hide my IP address?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, you can hide your IP address by using a VPN (Virtual Private Network), proxy server, or Tor browser. These tools mask your real IP address by routing your internet traffic through different servers."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What's the difference between IPv4 and IPv6?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "IPv4 uses a 32-bit address format (e.g., 192.168.1.1) providing about 4.3 billion addresses. IPv6 uses a 128-bit format (e.g., 2001:0db8::1) providing virtually unlimited addresses. IPv6 was created to solve IPv4 address exhaustion."
+                }
             }
         ]
     };
@@ -212,8 +215,14 @@ export default async function IpPage() {
     return (
         <>
             <script
+                id="app-schema"
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(appSchema) }}
+            />
+            <script
+                id="faq-schema"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
             />
 
             <div className="max-w-4xl mx-auto space-y-8">
