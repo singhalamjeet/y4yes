@@ -39,8 +39,9 @@ export default function IPv6AdoptionPage() {
         },
         "creator": {
             "@type": "Organization",
-            "name": "y4yes",
-            "url": "https://y4yes.com"
+            "name": "y4yes Team",
+            "url": "https://y4yes.com",
+            "sameAs": "https://twitter.com/y4yes"
         },
         "license": "https://creativecommons.org/licenses/by/4.0/"
     };
